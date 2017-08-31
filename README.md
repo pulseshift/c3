@@ -6,6 +6,9 @@ This is a fork of c3. Purpose of this project is to enhace c3 by some custom fea
 
 Follow the link for more information: [http://c3js.org](http://c3js.org/)
 
+## TODOs
+List a brief overview of custom extensions.
+
 ## Dependency
 + [D3.js](https://github.com/mbostock/d3) `~3.5.0`
 

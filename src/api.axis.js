@@ -61,3 +61,34 @@ c3_chart_fn.axis.range = function (range) {
         };
     }
 };
+
+// === START PULSESHIFT CUSTOM EXTENSION ===
+
+// show/hide Y2 axis by API
+c3_chart_fn.axis.showY2 = function(shown) {
+    let $$ = this.internal, config = $$.config
+    config.axis_y2_show = !!shown
+    $$.axes.y2.style(
+    'visibility',
+    config.axis_y2_show ? 'visible' : 'hidden'
+    )
+    $$.redraw()
+}
+
+// show/hide Y axis by API
+c3_chart_fn.axis.showY = function(shown) {
+    let $$ = this.internal, config = $$.config
+    config.axis_y_show = !!shown
+    $$.axes.y.style('visibility', config.axis_y_show ? 'visible' : 'hidden')
+    $$.redraw()
+}
+
+// show/hide X axis by API
+c3_chart_fn.axis.showX = function(shown) {
+    let $$ = this.internal, config = $$.config
+    config.axis_x_show = !!shown
+    $$.axes.x.style('visibility', config.axis_x_show ? 'visible' : 'hidden')
+    $$.redraw()
+}
+
+// === END PULSESHIFT CUSTOM EXTENSION ===

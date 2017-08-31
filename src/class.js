@@ -48,6 +48,16 @@ export default {
     gaugeValue: 'c3-gauge-value',
     grid: 'c3-grid',
     gridLines: 'c3-grid-lines',
+
+    // === START PULSESHIFT CUSTOM EXTENSION ===
+    gridLineCircleText: 'c3-grid-lines-circle-text',
+    gridLineCircle: 'c3-grid-lines-circle',
+    gridLineCircleHover: 'c3-grid-lines-circle-hover',
+    regionArea: 'c3-region-area',
+    regionStripe: 'c3-region-stripe',
+    regionText: 'c3-region-text',
+    // === END PULSESHIFT CUSTOM EXTENSION ===
+
     xgrid: 'c3-xgrid',
     xgrids: 'c3-xgrids',
     xgridLine: 'c3-xgrid-line',

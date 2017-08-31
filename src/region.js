@@ -16,6 +16,28 @@ c3_chart_internal_fn.updateRegion = function (duration) {
 
     $$.mainRegion = $$.main.select('.' + CLASS.regions).selectAll('.' + CLASS.region)
         .data(config.regions);
+
+    // === START PULSESHIFT CUSTOM EXTENSION ===
+    // remove >>> $$.mainRegion.enter().append('g');
+    // remove >>>    .append('rect')
+    // remove >>>    .style("fill-opacity", 0);
+    var oMainRegionRect = $$.mainRegion.enter().append('g');
+    oMainRegionRect.append('rect')
+        .attr("class", CLASS.regionArea)
+        .style("fill-opacity", 0);
+
+    oMainRegionRect.append('rect')
+        .attr("class", CLASS.regionStripe)
+        .style("fill-opacity", 0);
+
+    oMainRegionRect.append('text')
+        .attr("class", CLASS.regionText)
+        .attr("dy", "0.5rem")
+        .attr("text-anchor", "end")
+        .text(function (d) { return d.text ? d.text : ""; })
+        .style("fill-opacity", 0);
+    // === END PULSESHIFT CUSTOM EXTENSION ===
+
     $$.mainRegion.enter().append('g')
       .append('rect')
         .style("fill-opacity", 0);
@@ -26,11 +48,37 @@ c3_chart_internal_fn.updateRegion = function (duration) {
         .remove();
 };
 c3_chart_internal_fn.redrawRegion = function (withTransition) {
+    // === START PULSESHIFT CUSTOM EXTENSION ===
+    // remove >>> var $$ = this,
+    // remove >>>     regions = $$.mainRegion.selectAll('rect').each(function () {
+    // remove >>>         // data is binded to g and it's not transferred to rect (child node) automatically,
+    // remove >>>         // then data of each rect has to be updated manually.
+    // remove >>>         // TODO: there should be more efficient way to solve this?
+    // remove >>>         var parentData = $$.d3.select(this.parentNode).datum();
+    // remove >>>         $$.d3.select(this).datum(parentData);
+    // remove >>>     }),
+    // remove >>>     x = $$.regionX.bind($$),
+    // remove >>>     y = $$.regionY.bind($$),
+    // remove >>>     w = $$.regionWidth.bind($$),
+    // remove >>>     h = $$.regionHeight.bind($$);
+    // remove >>> return [
+    // remove >>>     (withTransition ? regions.transition() : regions)
+    // remove >>>         .attr("x", x)
+    // remove >>>         .attr("y", y)
+    // remove >>>         .attr("width", w)
+    // remove >>>         .attr("height", h)
+    // remove >>>         .style("fill-opacity", function (d) { return isValue(d.opacity) ? d.opacity : 0.1; })
+    // remove >>> ];
     var $$ = this,
-        regions = $$.mainRegion.selectAll('rect').each(function () {
-            // data is binded to g and it's not transferred to rect (child node) automatically,
-            // then data of each rect has to be updated manually.
-            // TODO: there should be more efficient way to solve this?
+        regions = $$.mainRegion.selectAll('rect.'+CLASS.regionArea).each(function () {
+            var parentData = $$.d3.select(this.parentNode).datum();
+            $$.d3.select(this).datum(parentData);
+        }),
+        regionStripes = $$.mainRegion.selectAll('rect.'+CLASS.regionStripe).each(function () {
+            var parentData = $$.d3.select(this.parentNode).datum();
+            $$.d3.select(this).datum(parentData);
+        }),
+        regionTexts = $$.mainRegion.selectAll('text.'+CLASS.regionText).each(function () {
             var parentData = $$.d3.select(this.parentNode).datum();
             $$.d3.select(this).datum(parentData);
         }),
@@ -44,8 +92,20 @@ c3_chart_internal_fn.redrawRegion = function (withTransition) {
             .attr("y", y)
             .attr("width", w)
             .attr("height", h)
-            .style("fill-opacity", function (d) { return isValue(d.opacity) ? d.opacity : 0.1; })
+            .style("fill-opacity", function (d) { return isValue(d.opacity) ? d.opacity : 0.2; }),
+        (withTransition ? regionStripes.transition() : regionStripes)
+            .attr("x", x)
+            .attr("y", y)
+            .attr("width", w)
+            .attr("height", 2)
+            .style("fill-opacity", function (d) { return isValue(d.opacity) ? d.opacity : 1; }),
+        (withTransition ? regionTexts.transition() : regionTexts)
+            .attr("x", -50)
+            .attr("y", function(d) { return x(d) + w(d) / 2; })
+            .style("fill-opacity", function (d) { return isValue(d.opacity) ? d.opacity : 1; })
     ];
+    // === END PULSESHIFT CUSTOM EXTENSION ===
+
 };
 c3_chart_internal_fn.regionX = function (d) {
     var $$ = this, config = $$.config,

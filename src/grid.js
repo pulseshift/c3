@@ -109,6 +109,40 @@ c3_chart_internal_fn.updateGrid = function (duration) {
         .attr('dx', $$.gridTextDx)
         .attr('dy', -5)
         .style("opacity", 0);
+
+    // === START PULSESHIFT CUSTOM EXTENSION ===
+        xgridLine.append('text')
+        .attr("text-anchor", "middle")
+        .attr('class', CLASS.gridLineCircleText)
+        .attr('dx', 1)
+        .attr('dy', 14)
+        .attr("y", 15)
+        .text("\ue0aa")
+        .style("opacity", 0);
+    xgridLine.append('circle')
+        .attr('class', CLASS.gridLineCircle)
+        .attr('r', 15)
+        .attr('cy', 21)
+        .attr('fill', 'transparent')
+        .attr('stroke-width', 2)
+        .style("opacity", 0);
+    xgridLine.append('circle')
+        .attr('class', CLASS.gridLineCircleHover)
+        .attr('r', 15)
+        .attr('cy', 21)
+        .attr('fill', 'transparent')
+        .attr('stroke-width', 1)
+        .attr('stroke-linecap', 'round')
+        .attr('stroke-dasharray', '1 3')
+        .on("mouseover", function(){
+            this.setAttribute('r', '20');
+        })
+        .on("mouseout", function(){
+            this.setAttribute('r', '15');
+        })
+        .style("opacity", 0);
+    // === END PULSESHIFT CUSTOM EXTENSION ===
+
     // udpate
     // done in d3.transition() of the end of this function
     // exit
@@ -156,14 +190,39 @@ c3_chart_internal_fn.updateGrid = function (duration) {
 c3_chart_internal_fn.redrawGrid = function (withTransition) {
     var $$ = this, config = $$.config, xv = $$.xv.bind($$),
         lines = $$.xgridLines.select('line'),
+
+        // === START PULSESHIFT CUSTOM EXTENSION ===
+        circles = $$.xgridLines.select('circle.' + CLASS.gridLineCircle),
+        circlesHover = $$.xgridLines.select('circle.' + CLASS.gridLineCircleHover),
+        circleTexts = $$.xgridLines.select('text.' + CLASS.gridLineCircleText),
+        // === END PULSESHIFT CUSTOM EXTENSION ===
+
         texts = $$.xgridLines.select('text');
     return [
         (withTransition ? lines.transition() : lines)
             .attr("x1", config.axis_rotated ? 0 : xv)
             .attr("x2", config.axis_rotated ? $$.width : xv)
-            .attr("y1", config.axis_rotated ? xv : 0)
+
+            // === START PULSESHIFT CUSTOM EXTENSION ===
+            // remove >> .attr("y1", config.axis_rotated ? xv : 0)
+            .attr("y1", config.axis_rotated ? xv : function (d) { return d.showSelector ? 35 : 0; })
+            // === END PULSESHIFT CUSTOM EXTENSION ===
+
             .attr("y2", config.axis_rotated ? xv : $$.height)
             .style("opacity", 1),
+
+        // === START PULSESHIFT CUSTOM EXTENSION ===
+        (withTransition ? circles.transition() : circles)
+            .attr("cx", config.axis_rotated ? 0 : xv)
+            .style("opacity", 1),
+        (withTransition ? circlesHover.transition() : circlesHover)
+            .attr("cx", config.axis_rotated ? 0 : xv)
+            .style("opacity", 1),
+        (withTransition ? circleTexts.transition() : circleTexts)
+            .attr("x", xv)
+            .style("opacity", 1),
+        // === END PULSESHIFT CUSTOM EXTENSION ===
+
         (withTransition ? texts.transition() : texts)
             .attr("x", config.axis_rotated ? $$.yGridTextX.bind($$) : $$.xGridTextX.bind($$))
             .attr("y", xv)
