@@ -54,6 +54,16 @@ var CLASS = {
     gaugeValue: 'c3-gauge-value',
     grid: 'c3-grid',
     gridLines: 'c3-grid-lines',
+
+    // === START PULSESHIFT CUSTOM EXTENSION ===
+    gridLineCircleText: 'c3-grid-lines-circle-text',
+    gridLineCircle: 'c3-grid-lines-circle',
+    gridLineCircleHover: 'c3-grid-lines-circle-hover',
+    regionArea: 'c3-region-area',
+    regionStripe: 'c3-region-stripe',
+    regionText: 'c3-region-text',
+    // === END PULSESHIFT CUSTOM EXTENSION ===
+
     xgrid: 'c3-xgrid',
     xgrids: 'c3-xgrids',
     xgridLine: 'c3-xgrid-line',
@@ -92,7 +102,118 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 
 
+var asyncGenerator = function () {
+  function AwaitValue(value) {
+    this.value = value;
+  }
 
+  function AsyncGenerator(gen) {
+    var front, back;
+
+    function send(key, arg) {
+      return new Promise(function (resolve, reject) {
+        var request = {
+          key: key,
+          arg: arg,
+          resolve: resolve,
+          reject: reject,
+          next: null
+        };
+
+        if (back) {
+          back = back.next = request;
+        } else {
+          front = back = request;
+          resume(key, arg);
+        }
+      });
+    }
+
+    function resume(key, arg) {
+      try {
+        var result = gen[key](arg);
+        var value = result.value;
+
+        if (value instanceof AwaitValue) {
+          Promise.resolve(value.value).then(function (arg) {
+            resume("next", arg);
+          }, function (arg) {
+            resume("throw", arg);
+          });
+        } else {
+          settle(result.done ? "return" : "normal", result.value);
+        }
+      } catch (err) {
+        settle("throw", err);
+      }
+    }
+
+    function settle(type, value) {
+      switch (type) {
+        case "return":
+          front.resolve({
+            value: value,
+            done: true
+          });
+          break;
+
+        case "throw":
+          front.reject(value);
+          break;
+
+        default:
+          front.resolve({
+            value: value,
+            done: false
+          });
+          break;
+      }
+
+      front = front.next;
+
+      if (front) {
+        resume(front.key, front.arg);
+      } else {
+        back = null;
+      }
+    }
+
+    this._invoke = send;
+
+    if (typeof gen.return !== "function") {
+      this.return = undefined;
+    }
+  }
+
+  if (typeof Symbol === "function" && Symbol.asyncIterator) {
+    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
+      return this;
+    };
+  }
+
+  AsyncGenerator.prototype.next = function (arg) {
+    return this._invoke("next", arg);
+  };
+
+  AsyncGenerator.prototype.throw = function (arg) {
+    return this._invoke("throw", arg);
+  };
+
+  AsyncGenerator.prototype.return = function (arg) {
+    return this._invoke("return", arg);
+  };
+
+  return {
+    wrap: function (fn) {
+      return function () {
+        return new AsyncGenerator(fn.apply(this, arguments));
+      };
+    },
+    await: function (value) {
+      return new AwaitValue(value);
+    }
+  };
+}();
 
 
 
@@ -3429,6 +3550,37 @@ c3_chart_fn.axis.range = function (range) {
     }
 };
 
+// === START PULSESHIFT CUSTOM EXTENSION ===
+
+// show/hide Y2 axis by API
+c3_chart_fn.axis.showY2 = function (shown) {
+    var $$ = this.internal,
+        config = $$.config;
+    config.axis_y2_show = !!shown;
+    $$.axes.y2.style('visibility', config.axis_y2_show ? 'visible' : 'hidden');
+    $$.redraw();
+};
+
+// show/hide Y axis by API
+c3_chart_fn.axis.showY = function (shown) {
+    var $$ = this.internal,
+        config = $$.config;
+    config.axis_y_show = !!shown;
+    $$.axes.y.style('visibility', config.axis_y_show ? 'visible' : 'hidden');
+    $$.redraw();
+};
+
+// show/hide X axis by API
+c3_chart_fn.axis.showX = function (shown) {
+    var $$ = this.internal,
+        config = $$.config;
+    config.axis_x_show = !!shown;
+    $$.axes.x.style('visibility', config.axis_x_show ? 'visible' : 'hidden');
+    $$.redraw();
+};
+
+// === END PULSESHIFT CUSTOM EXTENSION ===
+
 c3_chart_fn.category = function (i, category) {
     var $$ = this.internal,
         config = $$.config;
@@ -4319,16 +4471,13 @@ c3_chart_fn.zoom.range = function (range) {
 
 c3_chart_internal_fn.initPie = function () {
     var $$ = this,
-        d3 = $$.d3,
-        config = $$.config;
+        d3 = $$.d3;
     $$.pie = d3.layout.pie().value(function (d) {
         return d.values.reduce(function (a, b) {
             return a + b.value;
         }, 0);
     });
-    if (!config.data_order) {
-        $$.pie.sort(null);
-    }
+    $$.pie.sort($$.getOrderFunction() || null);
 };
 
 c3_chart_internal_fn.updateRadius = function () {
@@ -5809,26 +5958,36 @@ c3_chart_internal_fn.isOrderAsc = function () {
     var config = this.config;
     return typeof config.data_order === 'string' && config.data_order.toLowerCase() === 'asc';
 };
-c3_chart_internal_fn.orderTargets = function (targets) {
+c3_chart_internal_fn.getOrderFunction = function () {
     var $$ = this,
         config = $$.config,
         orderAsc = $$.isOrderAsc(),
         orderDesc = $$.isOrderDesc();
     if (orderAsc || orderDesc) {
-        targets.sort(function (t1, t2) {
+        return function (t1, t2) {
             var reducer = function reducer(p, c) {
                 return p + Math.abs(c.value);
             };
             var t1Sum = t1.values.reduce(reducer, 0),
                 t2Sum = t2.values.reduce(reducer, 0);
-            return orderAsc ? t2Sum - t1Sum : t1Sum - t2Sum;
-        });
+            return orderDesc ? t2Sum - t1Sum : t1Sum - t2Sum;
+        };
     } else if (isFunction(config.data_order)) {
-        targets.sort(config.data_order);
+        return config.data_order;
     } else if (isArray(config.data_order)) {
-        targets.sort(function (t1, t2) {
-            return config.data_order.indexOf(t1.id) - config.data_order.indexOf(t2.id);
-        });
+        var order = config.data_order;
+        return function (t1, t2) {
+            return order.indexOf(t1.id) - order.indexOf(t2.id);
+        };
+    }
+};
+c3_chart_internal_fn.orderTargets = function (targets) {
+    var fct = this.getOrderFunction();
+    if (fct) {
+        targets.sort(fct);
+        if (this.isOrderAsc() || this.isOrderDesc()) {
+            targets.reverse();
+        }
     }
     return targets;
 };
@@ -6642,6 +6801,17 @@ c3_chart_internal_fn.updateGrid = function (duration) {
     });
     xgridLine.append('line').style("opacity", 0);
     xgridLine.append('text').attr("text-anchor", $$.gridTextAnchor).attr("transform", config.axis_rotated ? "" : "rotate(-90)").attr('dx', $$.gridTextDx).attr('dy', -5).style("opacity", 0);
+
+    // === START PULSESHIFT CUSTOM EXTENSION ===
+    xgridLine.append('text').attr("text-anchor", "middle").attr('class', CLASS.gridLineCircleText).attr('dx', 1).attr('dy', 14).attr("y", 15).text('\uE0AA').style("opacity", 0);
+    xgridLine.append('circle').attr('class', CLASS.gridLineCircle).attr('r', 15).attr('cy', 21).attr('fill', 'transparent').attr('stroke-width', 2).style("opacity", 0);
+    xgridLine.append('circle').attr('class', CLASS.gridLineCircleHover).attr('r', 15).attr('cy', 21).attr('fill', 'transparent').attr('stroke-width', 1).attr('stroke-linecap', 'round').attr('stroke-dasharray', '1 3').on("mouseover", function () {
+        this.setAttribute('r', '20');
+    }).on("mouseout", function () {
+        this.setAttribute('r', '15');
+    }).style("opacity", 0);
+    // === END PULSESHIFT CUSTOM EXTENSION ===
+
     // udpate
     // done in d3.transition() of the end of this function
     // exit
@@ -6672,8 +6842,32 @@ c3_chart_internal_fn.redrawGrid = function (withTransition) {
         config = $$.config,
         xv = $$.xv.bind($$),
         lines = $$.xgridLines.select('line'),
-        texts = $$.xgridLines.select('text');
-    return [(withTransition ? lines.transition() : lines).attr("x1", config.axis_rotated ? 0 : xv).attr("x2", config.axis_rotated ? $$.width : xv).attr("y1", config.axis_rotated ? xv : 0).attr("y2", config.axis_rotated ? xv : $$.height).style("opacity", 1), (withTransition ? texts.transition() : texts).attr("x", config.axis_rotated ? $$.yGridTextX.bind($$) : $$.xGridTextX.bind($$)).attr("y", xv).text(function (d) {
+
+
+    // === START PULSESHIFT CUSTOM EXTENSION ===
+    circles = $$.xgridLines.select('circle.' + CLASS.gridLineCircle),
+        circlesHover = $$.xgridLines.select('circle.' + CLASS.gridLineCircleHover),
+        circleTexts = $$.xgridLines.select('text.' + CLASS.gridLineCircleText),
+
+    // === END PULSESHIFT CUSTOM EXTENSION ===
+
+    texts = $$.xgridLines.select('text');
+    return [(withTransition ? lines.transition() : lines).attr("x1", config.axis_rotated ? 0 : xv).attr("x2", config.axis_rotated ? $$.width : xv)
+
+    // === START PULSESHIFT CUSTOM EXTENSION ===
+    // remove >> .attr("y1", config.axis_rotated ? xv : 0)
+    .attr("y1", config.axis_rotated ? xv : function (d) {
+        return d.showSelector ? 35 : 0;
+    })
+    // === END PULSESHIFT CUSTOM EXTENSION ===
+
+    .attr("y2", config.axis_rotated ? xv : $$.height).style("opacity", 1),
+
+    // === START PULSESHIFT CUSTOM EXTENSION ===
+    (withTransition ? circles.transition() : circles).attr("cx", config.axis_rotated ? 0 : xv).style("opacity", 1), (withTransition ? circlesHover.transition() : circlesHover).attr("cx", config.axis_rotated ? 0 : xv).style("opacity", 1), (withTransition ? circleTexts.transition() : circleTexts).attr("x", xv).style("opacity", 1),
+    // === END PULSESHIFT CUSTOM EXTENSION ===
+
+    (withTransition ? texts.transition() : texts).attr("x", config.axis_rotated ? $$.yGridTextX.bind($$) : $$.xGridTextX.bind($$)).attr("y", xv).text(function (d) {
         return d.text;
     }).style("opacity", 1)];
 };
@@ -7490,16 +7684,57 @@ c3_chart_internal_fn.updateRegion = function (duration) {
     $$.region.style('visibility', $$.hasArcType() ? 'hidden' : 'visible');
 
     $$.mainRegion = $$.main.select('.' + CLASS.regions).selectAll('.' + CLASS.region).data(config.regions);
+
+    // === START PULSESHIFT CUSTOM EXTENSION ===
+    // remove >>> $$.mainRegion.enter().append('g');
+    // remove >>>    .append('rect')
+    // remove >>>    .style("fill-opacity", 0);
+    var oMainRegionRect = $$.mainRegion.enter().append('g');
+    oMainRegionRect.append('rect').attr("class", CLASS.regionArea).style("fill-opacity", 0);
+
+    oMainRegionRect.append('rect').attr("class", CLASS.regionStripe).style("fill-opacity", 0);
+
+    oMainRegionRect.append('text').attr("class", CLASS.regionText).attr("dy", "0.5rem").attr("text-anchor", "end").text(function (d) {
+        return d.text ? d.text : "";
+    }).style("fill-opacity", 0);
+    // === END PULSESHIFT CUSTOM EXTENSION ===
+
     $$.mainRegion.enter().append('g').append('rect').style("fill-opacity", 0);
     $$.mainRegion.attr('class', $$.classRegion.bind($$));
     $$.mainRegion.exit().transition().duration(duration).style("opacity", 0).remove();
 };
 c3_chart_internal_fn.redrawRegion = function (withTransition) {
+    // === START PULSESHIFT CUSTOM EXTENSION ===
+    // remove >>> var $$ = this,
+    // remove >>>     regions = $$.mainRegion.selectAll('rect').each(function () {
+    // remove >>>         // data is binded to g and it's not transferred to rect (child node) automatically,
+    // remove >>>         // then data of each rect has to be updated manually.
+    // remove >>>         // TODO: there should be more efficient way to solve this?
+    // remove >>>         var parentData = $$.d3.select(this.parentNode).datum();
+    // remove >>>         $$.d3.select(this).datum(parentData);
+    // remove >>>     }),
+    // remove >>>     x = $$.regionX.bind($$),
+    // remove >>>     y = $$.regionY.bind($$),
+    // remove >>>     w = $$.regionWidth.bind($$),
+    // remove >>>     h = $$.regionHeight.bind($$);
+    // remove >>> return [
+    // remove >>>     (withTransition ? regions.transition() : regions)
+    // remove >>>         .attr("x", x)
+    // remove >>>         .attr("y", y)
+    // remove >>>         .attr("width", w)
+    // remove >>>         .attr("height", h)
+    // remove >>>         .style("fill-opacity", function (d) { return isValue(d.opacity) ? d.opacity : 0.1; })
+    // remove >>> ];
     var $$ = this,
-        regions = $$.mainRegion.selectAll('rect').each(function () {
-        // data is binded to g and it's not transferred to rect (child node) automatically,
-        // then data of each rect has to be updated manually.
-        // TODO: there should be more efficient way to solve this?
+        regions = $$.mainRegion.selectAll('rect.' + CLASS.regionArea).each(function () {
+        var parentData = $$.d3.select(this.parentNode).datum();
+        $$.d3.select(this).datum(parentData);
+    }),
+        regionStripes = $$.mainRegion.selectAll('rect.' + CLASS.regionStripe).each(function () {
+        var parentData = $$.d3.select(this.parentNode).datum();
+        $$.d3.select(this).datum(parentData);
+    }),
+        regionTexts = $$.mainRegion.selectAll('text.' + CLASS.regionText).each(function () {
         var parentData = $$.d3.select(this.parentNode).datum();
         $$.d3.select(this).datum(parentData);
     }),
@@ -7508,8 +7743,15 @@ c3_chart_internal_fn.redrawRegion = function (withTransition) {
         w = $$.regionWidth.bind($$),
         h = $$.regionHeight.bind($$);
     return [(withTransition ? regions.transition() : regions).attr("x", x).attr("y", y).attr("width", w).attr("height", h).style("fill-opacity", function (d) {
-        return isValue(d.opacity) ? d.opacity : 0.1;
+        return isValue(d.opacity) ? d.opacity : 0.2;
+    }), (withTransition ? regionStripes.transition() : regionStripes).attr("x", x).attr("y", y).attr("width", w).attr("height", 2).style("fill-opacity", function (d) {
+        return isValue(d.opacity) ? d.opacity : 1;
+    }), (withTransition ? regionTexts.transition() : regionTexts).attr("x", -50).attr("y", function (d) {
+        return x(d) + w(d) / 2;
+    }).style("fill-opacity", function (d) {
+        return isValue(d.opacity) ? d.opacity : 1;
     })];
+    // === END PULSESHIFT CUSTOM EXTENSION ===
 };
 c3_chart_internal_fn.regionX = function (d) {
     var $$ = this,
@@ -8203,7 +8445,7 @@ c3_chart_internal_fn.lineWithRegions = function (d, x, y, _regions) {
                     s += sWithRegion(d[i - 1], d[i], j, diff);
                 }
             }
-        prev = d[i].x;
+        
     }
 
     return s;
@@ -8352,7 +8594,11 @@ c3_chart_internal_fn.pointR = function (d) {
 c3_chart_internal_fn.pointExpandedR = function (d) {
     var $$ = this,
         config = $$.config;
-    return config.point_focus_expand_enabled ? config.point_focus_expand_r ? config.point_focus_expand_r : $$.pointR(d) * 1.75 : $$.pointR(d);
+    if (config.point_focus_expand_enabled) {
+        return isFunction(config.point_focus_expand_r) ? config.point_focus_expand_r(d) : config.point_focus_expand_r ? config.point_focus_expand_r : $$.pointR(d) * 1.75;
+    } else {
+        return $$.pointR(d);
+    }
 };
 c3_chart_internal_fn.pointSelectR = function (d) {
     var $$ = this,
