@@ -293,7 +293,7 @@ c3_chart_internal_fn.redrawArea = function (drawArea, withTransition) {
                     values = $$.convertValuesToStep(values);
                 }
 
-                // ===== START OPAL EXTENSION =====
+                // ===== START OPAL EXTENSION ====
                 // in case of the ribbon type, the null defined sequence in the beginning needs to be cut off
                 if($$.isRibbonType(d)) {
                     var sliceStart = 0, valuesLength = values.length, sliceEnd = 0;
