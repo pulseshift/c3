@@ -242,39 +242,87 @@ c3_chart_internal_fn.redrawArea = function (drawArea, withTransition) {
             .style("opacity", this.orgAreaOpacity)
     ];
 };
-c3_chart_internal_fn.generateDrawArea = function (areaIndices, isSub) {
-    var $$ = this, config = $$.config, area = $$.d3.svg.area(),
-        getPoints = $$.generateGetAreaPoints(areaIndices, isSub),
-        yScaleGetter = isSub ? $$.getSubYScale : $$.getYScale,
-        xValue = function (d) { return (isSub ? $$.subxx : $$.xx).call($$, d); },
-        value0 = function (d, i) {
-            return config.data_groups.length > 0 ? getPoints(d, i)[0][1] : yScaleGetter.call($$, d.id)($$.getAreaBaseValue(d.id));
+    c3_chart_internal_fn.generateDrawArea = function (areaIndices, isSub) {
+        var $$ = this,
+            config = $$.config,
+            area = $$.d3.svg.area(),
+            getPoints = $$.generateGetAreaPoints(areaIndices, isSub),
+            yScaleGetter = isSub ? $$.getSubYScale : $$.getYScale,
+            xValue = function xValue(d, i) {
+            return (isSub ? $$.subxx : $$.xx).call($$, d);
         },
-        value1 = function (d, i) {
-            return config.data_groups.length > 0 ? getPoints(d, i)[1][1] : yScaleGetter.call($$, d.id)(d.value);
+
+            // ===== START OPAL EXTENSION =====
+            // in case of the ribbon type, area.y0 and area.y1 get the high and the low value
+            value0 = function value0(d, i) {
+                if($$.isRibbonType(d))
+                    return config.data_groups.length > 0 ? getPoints(d, i)[0][1] : yScaleGetter.call($$, d.id)(d.ribbonYs.low);
+                else
+                    return config.data_groups.length > 0 ? getPoints(d, i)[0][1] : yScaleGetter.call($$, d.id)($$.getAreaBaseValue(d.id));
+        },
+            value1 = function value1(d, i) {
+                if($$.isRibbonType(d))
+                    return config.data_groups.length > 0 ? getPoints(d, i)[1][1] : yScaleGetter.call($$, d.id)(d.ribbonYs.high);
+                else
+                    return config.data_groups.length > 0 ? getPoints(d, i)[1][1] : yScaleGetter.call($$, d.id)(d.value);
+            // ===== END OPAL EXTENSION =====
         };
 
-    area = config.axis_rotated ? area.x0(value0).x1(value1).y(xValue) : area.x(xValue).y0(config.area_above ? 0 : value0).y1(value1);
-    if (!config.line_connectNull) {
-        area = area.defined(function (d) { return d.value !== null; });
-    }
-
-    return function (d) {
-        var values = config.line_connectNull ? $$.filterRemoveNull(d.values) : d.values,
-            x0 = 0, y0 = 0, path;
-        if ($$.isAreaType(d)) {
-            if ($$.isStepType(d)) { values = $$.convertValuesToStep(values); }
-            path = area.interpolate($$.getInterpolate(d))(values);
-        } else {
-            if (values[0]) {
-                x0 = $$.x(values[0].x);
-                y0 = $$.getYScale(d.id)(values[0].value);
-            }
-            path = config.axis_rotated ? "M " + y0 + " " + x0 : "M " + x0 + " " + y0;
+        area = config.axis_rotated ? area.x0(value0).x1(value1).y(xValue) : area.x(xValue).y0(config.area_above ? 0 : value0).y1(value1);
+        if (!config.line_connectNull) {
+            area = area.defined(function (d) {
+              if($$.isRibbonType(d)){
+                return d.ribbonYs !== null;
+              }
+                else{
+                return d.value !== null;
+                }
+            });
         }
-        return path ? path : "M 0 0";
+
+        return function (d) {
+            // ===== START OPAL EXTENSION =====
+            // additional condition is necessary, otherwise filterRemoveNull will leave the values-array of the ribbon object empty
+            var values = config.line_connectNull && (!$$.isRibbonType(d)) ? $$.filterRemoveNull(d.values) : d.values,
+            // ===== END OPAL EXTENSION =====
+                x0 = 0,
+                y0 = 0,
+                path;
+            if ($$.isAreaType(d)) {
+                if ($$.isStepType(d)) {
+                    values = $$.convertValuesToStep(values);
+                }
+
+                // ===== START OPAL EXTENSION =====
+                // in case of the ribbon type, the null defined sequence in the beginning needs to be cut off
+                if($$.isRibbonType(d)) {
+                    var sliceStart = 0, valuesLength = values.length, sliceEnd = 0;
+                    for(var i=0; i<valuesLength; i++){
+                        if (values[i].ribbonYs.low === null && values[i].ribbonYs.high === null)
+                            sliceStart++;
+                        else break;
+                    }
+
+                    for(var i=valuesLength-1; i>0; i--){
+                      if (values[i].ribbonYs.low === null && values[i].ribbonYs.high === null)
+                          sliceEnd++;
+                      else break;
+                  }
+                    values = values.slice(sliceStart, (values.length-sliceEnd));
+                }
+                // ===== END OPAL EXTENSION =====
+
+                path = area.interpolate($$.getInterpolate(d))(values);
+            } else {
+                if (values[0]) {
+                    x0 = $$.x(values[0].x);
+                    y0 = $$.getYScale(d.id)(values[0].value);
+                }
+                path = config.axis_rotated ? "M " + y0 + " " + x0 : "M " + x0 + " " + y0;
+            }
+            return path ? path : "M 0 0";
+        };
     };
-};
 c3_chart_internal_fn.getAreaBaseValue = function () {
     return 0;
 };
