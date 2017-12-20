@@ -231,18 +231,22 @@ c3_chart_internal_fn.redrawGrid = function (withTransition) {
     ];
 };
 c3_chart_internal_fn.showXGridFocus = function (selectedData) {
-    var $$ = this, config = $$.config,
-        dataToShow = selectedData.filter(function (d) { return d && isValue(d.value); }),
+    var $$ = this,
+        config = $$.config,
+        dataToShow = selectedData.filter(function (d) {
+            if (d) {var ribbonIsValue = (d.ribbonYs == undefined) ? null : (isValue(d.ribbonYs.high) && isValue(d.ribbonYs.low));}
+            return d && (isValue(d.value) || ribbonIsValue);
+    }),
         focusEl = $$.main.selectAll('line.' + CLASS.xgridFocus),
         xx = $$.xx.bind($$);
-    if (! config.tooltip_show) { return; }
+    if (!config.tooltip_show) {
+        return;
+    }
     // Hide when scatter plot exists
-    if ($$.hasType('scatter') || $$.hasArcType()) { return; }
-    focusEl
-        .style("visibility", "visible")
-        .data([dataToShow[0]])
-        .attr(config.axis_rotated ? 'y1' : 'x1', xx)
-        .attr(config.axis_rotated ? 'y2' : 'x2', xx);
+    if ($$.hasType('scatter') || $$.hasArcType()) {
+        return;
+    }
+    focusEl.style("visibility", "visible").data([dataToShow[0]]).attr(config.axis_rotated ? 'y1' : 'x1', xx).attr(config.axis_rotated ? 'y2' : 'x2', xx);
     $$.smoothLines(focusEl, 'grid');
 };
 c3_chart_internal_fn.hideXGridFocus = function () {
