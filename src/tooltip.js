@@ -102,29 +102,82 @@ c3_chart_internal_fn.getTooltipContent = function (d, defaultTitleFormat, defaul
         titleFormat = config.tooltip_format_title || defaultTitleFormat,
         nameFormat = config.tooltip_format_name || function (name) { return name; },
         valueFormat = config.tooltip_format_value || defaultValueFormat,
-        text, i, title, value, name, bgcolor;
+        text, i, title, value, name, bgcolor,
+        orderAsc = $$.isOrderAsc();
 
-    var tooltipSortFunction = this.getTooltipSortFunction();
-    if(tooltipSortFunction) {
-        d.sort(tooltipSortFunction);
+        //create an array that contains any CI's high AND low values as seperate entries
+        var completeArray = [];//.concat(d);
+        var offset=0;
+
+        for (i = 0; i < d.length; i++) {
+            if (! (d[i])) {
+                offset++;
+                continue; }
+            
+            //append the data for one graph
+            completeArray.push({
+                id: d[i].id,
+                value: d[i].value,
+                name: d[i].name,
+                index: d[i].index,
+                x: d[i].x
+            });
+            
+            
+            //append high and low data for ribbon type
+            if($$.isRibbonType(d[i])){
+                var sName = d[i].name;
+                //create a new element and append it to the array for the low value
+                completeArray.push({
+                    id: d[i].id,
+                    value: d[i].ribbonYs.low,
+                    name: sName.concat(" low"),
+                    index: d[i].index,
+                    ribbonYs: d[i].ribbonYs,
+                    x: d[i].x
+                });
+                //change original CI element to represent the high value
+                completeArray[i-offset].value = d[i].ribbonYs.high;
+                completeArray[i-offset].name = sName.concat(" high");
+            }
+        }
+
+
+    if (config.data_groups.length === 0) {
+        completeArray.sort(function(a, b){
+            var v1 = a ? a.value : null, v2 = b ? b.value : null;
+            return orderAsc ? v1 - v2 : v2 - v1;
+        });
+    } else {
+        var ids = $$.orderTargets($$.data.targets).map(function (i) {
+            return i.id;
+        });
+        completeArray.sort(function(a, b) {
+            var v1 = a ? a.value : null, v2 = b ? b.value : null;
+            if (v1 > 0 && v2 > 0) {
+                v1 = a ? ids.indexOf(a.id) : null;
+                v2 = b ? ids.indexOf(b.id) : null;
+            }
+            return orderAsc ? v1 - v2 : v2 - v1;
+        });
     }
 
-    for (i = 0; i < d.length; i++) {
-        if (! (d[i] && (d[i].value || d[i].value === 0))) { continue; }
+    for (i = 0; i < completeArray.length; i++) {
+        if (! (completeArray[i] && (completeArray[i].value || completeArray[i].value === 0))) { continue; }
 
         if (! text) {
-            title = sanitise(titleFormat ? titleFormat(d[i].x) : d[i].x);
+            title = sanitise(titleFormat ? titleFormat(completeArray[i].x) : completeArray[i].x);
             text = "<table class='" + $$.CLASS.tooltip + "'>" + (title || title === 0 ? "<tr><th colspan='2'>" + title + "</th></tr>" : "");
         }
 
-        value = sanitise(valueFormat(d[i].value, d[i].ratio, d[i].id, d[i].index, d));
+        value = sanitise(valueFormat(completeArray[i].value, completeArray[i].ratio, completeArray[i].id, completeArray[i].index, completeArray));
         if (value !== undefined) {
             // Skip elements when their name is set to null
-            if (d[i].name === null) { continue; }
-            name = sanitise(nameFormat(d[i].name, d[i].ratio, d[i].id, d[i].index));
-            bgcolor = $$.levelColor ? $$.levelColor(d[i].value) : color(d[i].id);
+            if (completeArray[i].name === null) { continue; }
+            name = sanitise(nameFormat(completeArray[i].name, completeArray[i].ratio, completeArray[i].id, completeArray[i].index));
+            bgcolor = $$.levelColor ? $$.levelColor(completeArray[i].value) : color(completeArray[i].id);
 
-            text += "<tr class='" + $$.CLASS.tooltipName + "-" + $$.getTargetSelectorSuffix(d[i].id) + "'>";
+            text += "<tr class='" + $$.CLASS.tooltipName + "-" + $$.getTargetSelectorSuffix(completeArray[i].id) + "'>";
             text += "<td class='name'><span style='background-color:" + bgcolor + "'></span>" + name + "</td>";
             text += "<td class='value'>" + value + "</td>";
             text += "</tr>";
