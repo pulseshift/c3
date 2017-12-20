@@ -222,10 +222,14 @@ c3_chart_internal_fn.tooltipPosition = function (dataToShow, tWidth, tHeight, el
     return {top: tooltipTop, left: tooltipLeft};
 };
 c3_chart_internal_fn.showTooltip = function (selectedData, element) {
-    var $$ = this, config = $$.config;
+    var $$ = this,
+        config = $$.config;
     var tWidth, tHeight, position;
     var forArc = $$.hasArcType(),
-        dataToShow = selectedData.filter(function (d) { return d && isValue(d.value); }),
+        dataToShow = selectedData.filter(function (d) {
+        if (d) {var ribbonIsValue = (d.ribbonYs == undefined) ? null : (isValue(d.ribbonYs.high) && isValue(d.ribbonYs.low));}
+        return d && (isValue(d.value) || ribbonIsValue);
+    }),
         positionFunction = config.tooltip_position || c3_chart_internal_fn.tooltipPosition;
     if (dataToShow.length === 0 || !config.tooltip_show) {
         return;
@@ -238,9 +242,7 @@ c3_chart_internal_fn.showTooltip = function (selectedData, element) {
 
     position = positionFunction.call(this, dataToShow, tWidth, tHeight, element);
     // Set tooltip
-    $$.tooltip
-        .style("top", position.top + "px")
-        .style("left", position.left + 'px');
+    $$.tooltip.style("top", position.top + "px").style("left", position.left + 'px');
 };
 c3_chart_internal_fn.hideTooltip = function () {
     this.tooltip.style("display", "none");
