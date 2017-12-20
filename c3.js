@@ -102,118 +102,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 
 
-var asyncGenerator = function () {
-  function AwaitValue(value) {
-    this.value = value;
-  }
 
-  function AsyncGenerator(gen) {
-    var front, back;
-
-    function send(key, arg) {
-      return new Promise(function (resolve, reject) {
-        var request = {
-          key: key,
-          arg: arg,
-          resolve: resolve,
-          reject: reject,
-          next: null
-        };
-
-        if (back) {
-          back = back.next = request;
-        } else {
-          front = back = request;
-          resume(key, arg);
-        }
-      });
-    }
-
-    function resume(key, arg) {
-      try {
-        var result = gen[key](arg);
-        var value = result.value;
-
-        if (value instanceof AwaitValue) {
-          Promise.resolve(value.value).then(function (arg) {
-            resume("next", arg);
-          }, function (arg) {
-            resume("throw", arg);
-          });
-        } else {
-          settle(result.done ? "return" : "normal", result.value);
-        }
-      } catch (err) {
-        settle("throw", err);
-      }
-    }
-
-    function settle(type, value) {
-      switch (type) {
-        case "return":
-          front.resolve({
-            value: value,
-            done: true
-          });
-          break;
-
-        case "throw":
-          front.reject(value);
-          break;
-
-        default:
-          front.resolve({
-            value: value,
-            done: false
-          });
-          break;
-      }
-
-      front = front.next;
-
-      if (front) {
-        resume(front.key, front.arg);
-      } else {
-        back = null;
-      }
-    }
-
-    this._invoke = send;
-
-    if (typeof gen.return !== "function") {
-      this.return = undefined;
-    }
-  }
-
-  if (typeof Symbol === "function" && Symbol.asyncIterator) {
-    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
-      return this;
-    };
-  }
-
-  AsyncGenerator.prototype.next = function (arg) {
-    return this._invoke("next", arg);
-  };
-
-  AsyncGenerator.prototype.throw = function (arg) {
-    return this._invoke("throw", arg);
-  };
-
-  AsyncGenerator.prototype.return = function (arg) {
-    return this._invoke("return", arg);
-  };
-
-  return {
-    wrap: function (fn) {
-      return function () {
-        return new AsyncGenerator(fn.apply(this, arguments));
-      };
-    },
-    await: function (value) {
-      return new AwaitValue(value);
-    }
-  };
-}();
 
 
 
@@ -749,9 +638,9 @@ c3_axis_fn.init = function init() {
     $$.axes.y = main.append("g").attr("class", CLASS.axis + ' ' + CLASS.axisY).attr("clip-path", config.axis_y_inner ? "" : $$.clipPathForYAxis).attr("transform", $$.getTranslate('y')).style("visibility", config.axis_y_show ? 'visible' : 'hidden');
     $$.axes.y.append("text").attr("class", CLASS.axisYLabel).attr("transform", config.axis_rotated ? "" : "rotate(-90)").style("text-anchor", this.textAnchorForYAxisLabel.bind(this));
 
-    $$.axes.y2 = main.append("g").attr("class", CLASS.axis + ' ' + CLASS.axisY2)
+    $$.axes.y2 = main.append("g").attr("class", CLASS.axis + ' ' + CLASS.axisY2
     // clip-path?
-    .attr("transform", $$.getTranslate('y2')).style("visibility", config.axis_y2_show ? 'visible' : 'hidden');
+    ).attr("transform", $$.getTranslate('y2')).style("visibility", config.axis_y2_show ? 'visible' : 'hidden');
     $$.axes.y2.append("text").attr("class", CLASS.axisY2Label).attr("transform", config.axis_rotated ? "" : "rotate(-90)").style("text-anchor", this.textAnchorForY2AxisLabel.bind(this));
 };
 c3_axis_fn.getXAxis = function getXAxis(scale, orient, tickFormat, tickValues, withOuterTick, withoutTransition, withoutRotateTickText) {
@@ -1408,8 +1297,8 @@ c3_chart_internal_fn.initWithData = function (data) {
     /*-- Main Region --*/
 
     // text when empty
-    main.append("text").attr("class", CLASS.text + ' ' + CLASS.empty).attr("text-anchor", "middle") // horizontal centering of text at x position in all browsers.
-    .attr("dominant-baseline", "middle"); // vertical centering of text at y position in all browsers, except IE.
+    main.append("text").attr("class", CLASS.text + ' ' + CLASS.empty).attr("text-anchor", "middle" // horizontal centering of text at x position in all browsers.
+    ).attr("dominant-baseline", "middle"); // vertical centering of text at y position in all browsers, except IE.
 
     // Regions
     $$.initRegion();
@@ -4869,8 +4758,8 @@ c3_chart_internal_fn.redrawArc = function (duration, durationForExit, withTransf
         };
     }).attr("transform", withTransform ? "scale(1)" : "").style("fill", function (d) {
         return $$.levelColor ? $$.levelColor(d.data.values[0].value) : $$.color(d.data.id);
-    }) // Where gauge reading color would receive customization.
-    .call($$.endall, function () {
+    } // Where gauge reading color would receive customization.
+    ).call($$.endall, function () {
         $$.transiting = false;
     });
     mainArc.exit().transition().duration(durationForExit).style('opacity', 0).remove();
@@ -5619,10 +5508,26 @@ c3_chart_internal_fn.convertDataToTargets = function (data, appendXs) {
             values: data.map(function (d, i) {
                 var xKey = $$.getXKey(id),
                     rawX = d[xKey],
-                    value = d[id] !== null && !isNaN(d[id]) ? +d[id] : null,
+
+
+                // ===== START OPAL EXTENSION =====
+                // introducing ribbonYs, which is a pair of y values at the same x value: a high and a low
+                fnIsValidRibbonValue = function fnIsValidRibbonValue(val) {
+                    var isValidHigh = (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object' && val.hasOwnProperty('high') && !isNaN(val.high);
+                    var isValidLow = (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object' && val.hasOwnProperty('low') && !isNaN(val.low);
+                    return isValidHigh && isValidLow;
+                },
+
+
+                //add value if valid and no ribbon type
+                value = d[id] !== null && !isNaN(d[id]) && !$$.isRibbonType(id) ? +d[id] : null,
+
+                //add y value pair if valid and ribbon type
+                ribbonYvalues = !$$.isRibbonType(id) ? undefined : fnIsValidRibbonValue(d[id]) ? d[id] : undefined,
                     x;
+
                 // use x as categories if custom x and categorized
-                if ($$.isCustomX() && $$.isCategorized() && !isUndefined(rawX)) {
+                if ($$.isCustomX() && $$.isCategorized() && index === 0 && !isUndefined(rawX)) {
                     if (index === 0 && i === 0) {
                         config.axis_x_categories = [];
                     }
@@ -5638,7 +5543,8 @@ c3_chart_internal_fn.convertDataToTargets = function (data, appendXs) {
                 if (isUndefined(d[id]) || $$.data.xs[id].length <= i) {
                     x = undefined;
                 }
-                return { x: x, value: value, id: convertedId };
+                return { x: x, value: value, id: convertedId, ribbonYs: ribbonYvalues };
+                // ===== END OPAL EXTENSION =====
             }).filter(function (v) {
                 return isDefined(v.x);
             })
@@ -5915,12 +5821,14 @@ c3_chart_internal_fn.removeHiddenLegendIds = function (targetIds) {
         return targetIds.indexOf(id) < 0;
     });
 };
-c3_chart_internal_fn.getValuesAsIdKeyed = function (targets) {
+// function needed an additional parameter to tell whether the highs or the lows of the ribbons are supposed to be read
+c3_chart_internal_fn.getValuesAsIdKeyed = function (targets, ribbonHighs) {
+    var $$ = this;
     var ys = {};
     targets.forEach(function (t) {
         ys[t.id] = [];
         t.values.forEach(function (v) {
-            ys[t.id].push(v.value);
+            if ($$.isRibbonType(v.id)) ribbonHighs ? ys[t.id].push(v.ribbonYs.high) : ys[t.id].push(v.ribbonYs.low);else ys[t.id].push(v.value);
         });
     });
     return ys;
@@ -6236,7 +6144,7 @@ c3_chart_internal_fn.getYDomainMin = function (targets) {
     var $$ = this,
         config = $$.config,
         ids = $$.mapToIds(targets),
-        ys = $$.getValuesAsIdKeyed(targets),
+        ys = $$.getValuesAsIdKeyed(targets, false),
         j,
         k,
         baseId,
@@ -6282,7 +6190,7 @@ c3_chart_internal_fn.getYDomainMax = function (targets) {
     var $$ = this,
         config = $$.config,
         ids = $$.mapToIds(targets),
-        ys = $$.getValuesAsIdKeyed(targets),
+        ys = $$.getValuesAsIdKeyed(targets, true),
         j,
         k,
         baseId,
@@ -6852,16 +6760,16 @@ c3_chart_internal_fn.redrawGrid = function (withTransition) {
     // === END PULSESHIFT CUSTOM EXTENSION ===
 
     texts = $$.xgridLines.select('text');
-    return [(withTransition ? lines.transition() : lines).attr("x1", config.axis_rotated ? 0 : xv).attr("x2", config.axis_rotated ? $$.width : xv)
+    return [(withTransition ? lines.transition() : lines).attr("x1", config.axis_rotated ? 0 : xv).attr("x2", config.axis_rotated ? $$.width : xv
 
     // === START PULSESHIFT CUSTOM EXTENSION ===
     // remove >> .attr("y1", config.axis_rotated ? xv : 0)
-    .attr("y1", config.axis_rotated ? xv : function (d) {
+    ).attr("y1", config.axis_rotated ? xv : function (d) {
         return d.showSelector ? 35 : 0;
-    })
+    }
     // === END PULSESHIFT CUSTOM EXTENSION ===
 
-    .attr("y2", config.axis_rotated ? xv : $$.height).style("opacity", 1),
+    ).attr("y2", config.axis_rotated ? xv : $$.height).style("opacity", 1),
 
     // === START PULSESHIFT CUSTOM EXTENSION ===
     (withTransition ? circles.transition() : circles).attr("cx", config.axis_rotated ? 0 : xv).style("opacity", 1), (withTransition ? circlesHover.transition() : circlesHover).attr("cx", config.axis_rotated ? 0 : xv).style("opacity", 1), (withTransition ? circleTexts.transition() : circleTexts).attr("x", xv).style("opacity", 1),
@@ -6875,7 +6783,10 @@ c3_chart_internal_fn.showXGridFocus = function (selectedData) {
     var $$ = this,
         config = $$.config,
         dataToShow = selectedData.filter(function (d) {
-        return d && isValue(d.value);
+        if (d) {
+            var ribbonIsValue = d.ribbonYs == undefined ? null : isValue(d.ribbonYs.high) && isValue(d.ribbonYs.low);
+        }
+        return d && (isValue(d.value) || ribbonIsValue);
     }),
         focusEl = $$.main.selectAll('line.' + CLASS.xgridFocus),
         xx = $$.xx.bind($$);
@@ -7634,8 +7545,8 @@ c3_chart_internal_fn.updateLegend = function (targetIds, options, transitions) {
 
     texts = $$.legend.selectAll('text').data(targetIds).text(function (id) {
         return isDefined(config.data_names[id]) ? config.data_names[id] : id;
-    }) // MEMO: needed for update
-    .each(function (id, i) {
+    } // MEMO: needed for update
+    ).each(function (id, i) {
         updatePositions(this, id, i);
     });
     (withTransition ? texts.transition() : texts).attr('x', xForLegendText).attr('y', yForLegendText);
@@ -8445,7 +8356,7 @@ c3_chart_internal_fn.lineWithRegions = function (d, x, y, _regions) {
                     s += sWithRegion(d[i - 1], d[i], j, diff);
                 }
             }
-        
+        prev = d[i].x;
     }
 
     return s;
@@ -8470,32 +8381,63 @@ c3_chart_internal_fn.generateDrawArea = function (areaIndices, isSub) {
         area = $$.d3.svg.area(),
         getPoints = $$.generateGetAreaPoints(areaIndices, isSub),
         yScaleGetter = isSub ? $$.getSubYScale : $$.getYScale,
-        xValue = function xValue(d) {
+        xValue = function xValue(d, i) {
         return (isSub ? $$.subxx : $$.xx).call($$, d);
     },
-        value0 = function value0(d, i) {
-        return config.data_groups.length > 0 ? getPoints(d, i)[0][1] : yScaleGetter.call($$, d.id)($$.getAreaBaseValue(d.id));
+
+
+    // ===== START OPAL EXTENSION =====
+    // in case of the ribbon type, area.y0 and area.y1 get the high and the low value
+    value0 = function value0(d, i) {
+        if ($$.isRibbonType(d)) return config.data_groups.length > 0 ? getPoints(d, i)[0][1] : yScaleGetter.call($$, d.id)(d.ribbonYs.low);else return config.data_groups.length > 0 ? getPoints(d, i)[0][1] : yScaleGetter.call($$, d.id)($$.getAreaBaseValue(d.id));
     },
         value1 = function value1(d, i) {
-        return config.data_groups.length > 0 ? getPoints(d, i)[1][1] : yScaleGetter.call($$, d.id)(d.value);
+        if ($$.isRibbonType(d)) return config.data_groups.length > 0 ? getPoints(d, i)[1][1] : yScaleGetter.call($$, d.id)(d.ribbonYs.high);else return config.data_groups.length > 0 ? getPoints(d, i)[1][1] : yScaleGetter.call($$, d.id)(d.value);
+        // ===== END OPAL EXTENSION =====
     };
 
     area = config.axis_rotated ? area.x0(value0).x1(value1).y(xValue) : area.x(xValue).y0(config.area_above ? 0 : value0).y1(value1);
     if (!config.line_connectNull) {
         area = area.defined(function (d) {
-            return d.value !== null;
+            if ($$.isRibbonType(d)) {
+                return d.ribbonYs !== null;
+            } else {
+                return d.value !== null;
+            }
         });
     }
 
     return function (d) {
-        var values = config.line_connectNull ? $$.filterRemoveNull(d.values) : d.values,
-            x0 = 0,
+        // ===== START OPAL EXTENSION =====
+        // additional condition is necessary, otherwise filterRemoveNull will leave the values-array of the ribbon object empty
+        var values = config.line_connectNull && !$$.isRibbonType(d) ? $$.filterRemoveNull(d.values) : d.values,
+
+        // ===== END OPAL EXTENSION =====
+        x0 = 0,
             y0 = 0,
             path;
         if ($$.isAreaType(d)) {
             if ($$.isStepType(d)) {
                 values = $$.convertValuesToStep(values);
             }
+
+            // ===== START OPAL EXTENSION ====
+            // in case of the ribbon type, the null defined sequence in the beginning needs to be cut off
+            if ($$.isRibbonType(d)) {
+                var sliceStart = 0,
+                    valuesLength = values.length,
+                    sliceEnd = 0;
+                for (var i = 0; i < valuesLength; i++) {
+                    if (values[i].ribbonYs.low === null && values[i].ribbonYs.high === null) sliceStart++;else break;
+                }
+
+                for (var i = valuesLength - 1; i > 0; i--) {
+                    if (values[i].ribbonYs.low === null && values[i].ribbonYs.high === null) sliceEnd++;else break;
+                }
+                values = values.slice(sliceStart, values.length - sliceEnd);
+            }
+            // ===== END OPAL EXTENSION =====
+
             path = area.interpolate($$.getInterpolate(d))(values);
         } else {
             if (values[0]) {
@@ -9175,33 +9117,87 @@ c3_chart_internal_fn.getTooltipContent = function (d, defaultTitleFormat, defaul
         title,
         value,
         name,
-        bgcolor;
+        bgcolor,
+        orderAsc = $$.isOrderAsc();
 
-    var tooltipSortFunction = this.getTooltipSortFunction();
-    if (tooltipSortFunction) {
-        d.sort(tooltipSortFunction);
-    }
+    //create an array that contains any CI's high AND low values as seperate entries
+    var completeArray = []; //.concat(d);
+    var offset = 0;
 
     for (i = 0; i < d.length; i++) {
-        if (!(d[i] && (d[i].value || d[i].value === 0))) {
+        if (!d[i]) {
+            offset++;
+            continue;
+        }
+
+        //append the data for one graph
+        completeArray.push({
+            id: d[i].id,
+            value: d[i].value,
+            name: d[i].name,
+            index: d[i].index,
+            x: d[i].x
+        });
+
+        //append high and low data for ribbon type
+        if ($$.isRibbonType(d[i])) {
+            var sName = d[i].name;
+            //create a new element and append it to the array for the low value
+            completeArray.push({
+                id: d[i].id,
+                value: d[i].ribbonYs.low,
+                name: sName.concat(" low"),
+                index: d[i].index,
+                ribbonYs: d[i].ribbonYs,
+                x: d[i].x
+            });
+            //change original CI element to represent the high value
+            completeArray[i - offset].value = d[i].ribbonYs.high;
+            completeArray[i - offset].name = sName.concat(" high");
+        }
+    }
+
+    if (config.data_groups.length === 0) {
+        completeArray.sort(function (a, b) {
+            var v1 = a ? a.value : null,
+                v2 = b ? b.value : null;
+            return orderAsc ? v1 - v2 : v2 - v1;
+        });
+    } else {
+        var ids = $$.orderTargets($$.data.targets).map(function (i) {
+            return i.id;
+        });
+        completeArray.sort(function (a, b) {
+            var v1 = a ? a.value : null,
+                v2 = b ? b.value : null;
+            if (v1 > 0 && v2 > 0) {
+                v1 = a ? ids.indexOf(a.id) : null;
+                v2 = b ? ids.indexOf(b.id) : null;
+            }
+            return orderAsc ? v1 - v2 : v2 - v1;
+        });
+    }
+
+    for (i = 0; i < completeArray.length; i++) {
+        if (!(completeArray[i] && (completeArray[i].value || completeArray[i].value === 0))) {
             continue;
         }
 
         if (!text) {
-            title = sanitise(titleFormat ? titleFormat(d[i].x) : d[i].x);
+            title = sanitise(titleFormat ? titleFormat(completeArray[i].x) : completeArray[i].x);
             text = "<table class='" + $$.CLASS.tooltip + "'>" + (title || title === 0 ? "<tr><th colspan='2'>" + title + "</th></tr>" : "");
         }
 
-        value = sanitise(valueFormat(d[i].value, d[i].ratio, d[i].id, d[i].index, d));
+        value = sanitise(valueFormat(completeArray[i].value, completeArray[i].ratio, completeArray[i].id, completeArray[i].index, completeArray));
         if (value !== undefined) {
             // Skip elements when their name is set to null
-            if (d[i].name === null) {
+            if (completeArray[i].name === null) {
                 continue;
             }
-            name = sanitise(nameFormat(d[i].name, d[i].ratio, d[i].id, d[i].index));
-            bgcolor = $$.levelColor ? $$.levelColor(d[i].value) : color(d[i].id);
+            name = sanitise(nameFormat(completeArray[i].name, completeArray[i].ratio, completeArray[i].id, completeArray[i].index));
+            bgcolor = $$.levelColor ? $$.levelColor(completeArray[i].value) : color(completeArray[i].id);
 
-            text += "<tr class='" + $$.CLASS.tooltipName + "-" + $$.getTargetSelectorSuffix(d[i].id) + "'>";
+            text += "<tr class='" + $$.CLASS.tooltipName + "-" + $$.getTargetSelectorSuffix(completeArray[i].id) + "'>";
             text += "<td class='name'><span style='background-color:" + bgcolor + "'></span>" + name + "</td>";
             text += "<td class='value'>" + value + "</td>";
             text += "</tr>";
@@ -9253,7 +9249,10 @@ c3_chart_internal_fn.showTooltip = function (selectedData, element) {
     var tWidth, tHeight, position;
     var forArc = $$.hasArcType(),
         dataToShow = selectedData.filter(function (d) {
-        return d && isValue(d.value);
+        if (d) {
+            var ribbonIsValue = d.ribbonYs == undefined ? null : isValue(d.ribbonYs.high) && isValue(d.ribbonYs.low);
+        }
+        return d && (isValue(d.value) || ribbonIsValue);
     }),
         positionFunction = config.tooltip_position || c3_chart_internal_fn.tooltipPosition;
     if (dataToShow.length === 0 || !config.tooltip_show) {
@@ -9313,19 +9312,22 @@ c3_chart_internal_fn.hasArcType = function (targets) {
 c3_chart_internal_fn.isLineType = function (d) {
     var config = this.config,
         id = isString(d) ? d : d.id;
-    return !config.data_types[id] || ['line', 'spline', 'area', 'area-spline', 'step', 'area-step'].indexOf(config.data_types[id]) >= 0;
+    return !config.data_types[id] || ['line', 'spline', 'area', 'area-spline', 'step', 'area-step', 'ribbon-step', 'ribbon-spline', 'ribbon-line'].indexOf(config.data_types[id]) >= 0;
 };
 c3_chart_internal_fn.isStepType = function (d) {
     var id = isString(d) ? d : d.id;
-    return ['step', 'area-step'].indexOf(this.config.data_types[id]) >= 0;
+    return ['step', 'area-step', 'ribbon-step'].indexOf(this.config.data_types[id]) >= 0;
 };
 c3_chart_internal_fn.isSplineType = function (d) {
     var id = isString(d) ? d : d.id;
-    return ['spline', 'area-spline'].indexOf(this.config.data_types[id]) >= 0;
+    return ['spline', 'area-spline', 'ribbon-spline'].indexOf(this.config.data_types[id]) >= 0;
 };
 c3_chart_internal_fn.isAreaType = function (d) {
     var id = isString(d) ? d : d.id;
-    return ['area', 'area-spline', 'area-step'].indexOf(this.config.data_types[id]) >= 0;
+    return ['area', 'area-spline', 'area-step', 'ribbon-step', 'ribbon-spline', 'ribbon-line'].indexOf(this.config.data_types[id]) >= 0;
+};c3_chart_internal_fn.isRibbonType = function (d) {
+    var id = isString(d) ? d : d.id;
+    return ['ribbon-step', 'ribbon-spline', 'ribbon-line'].indexOf(this.config.data_types[id]) >= 0;
 };
 c3_chart_internal_fn.isBarType = function (d) {
     var id = isString(d) ? d : d.id;

@@ -202,11 +202,12 @@ c3_chart_internal_fn.removeHiddenLegendIds = function (targetIds) {
 };
 // function needed an additional parameter to tell whether the highs or the lows of the ribbons are supposed to be read
 c3_chart_internal_fn.getValuesAsIdKeyed = function (targets, ribbonHighs) {
+    var $$ = this;
     var ys = {};
     targets.forEach(function (t) {
         ys[t.id] = [];
         t.values.forEach(function (v) {
-            if(v.ribbonYs)
+            if($$.isRibbonType(v.id))
             ribbonHighs ? ys[t.id].push(v.ribbonYs.high) : ys[t.id].push(v.ribbonYs.low);
             else
             ys[t.id].push(v.value);
