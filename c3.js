@@ -1124,14 +1124,14 @@ c3_axis_fn.redraw = function redraw(transitions, isHidden) {
     transitions.axisSubX.call($$.subXAxis);
 };
 
-var c3 = { version: "0.4.21" };
+var c3$1 = { version: "0.4.21" };
 
 var c3_chart_fn;
 var c3_chart_internal_fn;
 
 function Component(owner, componentKey, fn) {
     this.owner = owner;
-    c3.chart.internal[componentKey] = fn;
+    c3$1.chart.internal[componentKey] = fn;
 }
 
 function Chart(config) {
@@ -1163,18 +1163,18 @@ function ChartInternal(api) {
     $$.axes = {};
 }
 
-c3.generate = function (config) {
+c3$1.generate = function (config) {
     return new Chart(config);
 };
 
-c3.chart = {
+c3$1.chart = {
     fn: Chart.prototype,
     internal: {
         fn: ChartInternal.prototype
     }
 };
-c3_chart_fn = c3.chart.fn;
-c3_chart_internal_fn = c3.chart.internal.fn;
+c3_chart_fn = c3$1.chart.fn;
+c3_chart_internal_fn = c3$1.chart.internal.fn;
 
 c3_chart_internal_fn.beforeInit = function () {
     // can do something
@@ -2283,6 +2283,8 @@ if (!Function.prototype.bind) {
 // changes which were implemented in Firefox 43 and Chrome 46.
 
 (function () {
+    "use strict";
+
     if (!("SVGPathSeg" in window)) {
         // Spec: http://www.w3.org/TR/SVG11/single-page.html#paths-InterfaceSVGPathSeg
         window.SVGPathSeg = function (type, typeAsLetter, owningPathSegList) {
@@ -9665,6 +9667,6 @@ c3_chart_internal_fn.redrawForZoom = function () {
     config.zoom_onzoom.call($$.api, x.orgDomain());
 };
 
-return c3;
+return c3$1;
 
 })));
