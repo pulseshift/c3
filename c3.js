@@ -1,4 +1,4 @@
-/* @license C3.js v0.4.21 | (c) C3 Team and other contributors | http://c3js.org/ */
+/* @license C3.js v0.4.22 | (c) C3 Team and other contributors | http://c3js.org/ */
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
@@ -7784,7 +7784,7 @@ c3_chart_internal_fn.updateLegend = function (targetIds, options, transitions) {
 
 c3_chart_internal_fn.initRegion = function () {
     var $$ = this;
-    $$.region = $$.main.append('g').attr("clip-path", $$.clipPath).attr("class", CLASS.regions);
+    $$.region = $$.main.append('g').attr('clip-path', $$.clipPath).attr('class', CLASS.regions);
 };
 c3_chart_internal_fn.updateRegion = function (duration) {
     var $$ = this,
@@ -7800,18 +7800,22 @@ c3_chart_internal_fn.updateRegion = function (duration) {
     // remove >>>    .append('rect')
     // remove >>>    .style("fill-opacity", 0);
     var oMainRegionRect = $$.mainRegion.enter().append('g');
-    oMainRegionRect.append('rect').attr("class", CLASS.regionArea).style("fill-opacity", 0);
+    oMainRegionRect.append('rect').attr('class', CLASS.regionArea).style('fill-opacity', 0);
 
-    oMainRegionRect.append('rect').attr("class", CLASS.regionStripe).style("fill-opacity", 0);
+    oMainRegionRect.append('rect').attr('class', CLASS.regionStripe).style('fill-opacity', 0);
 
-    oMainRegionRect.append('text').attr("class", CLASS.regionText).attr("dy", "0.5rem").attr("text-anchor", "end").text(function (d) {
-        return d.text ? d.text : "";
-    }).style("fill-opacity", 0);
+    oMainRegionRect.append('text').attr('class', CLASS.regionText).attr('dy', '0.5rem').attr('text-anchor', 'end').text(function (d) {
+        return d.text ? d.text : '';
+    }).style('fill-opacity', 0);
     // === END PULSESHIFT CUSTOM EXTENSION ===
 
-    $$.mainRegion.enter().append('g').append('rect').style("fill-opacity", 0);
+    // === START PULSESHIFT CUSTOM EXTENSION ===
+    // $$.mainRegion.enter().append('g')
+    //   .append('rect')
+    //     .style("fill-opacity", 0);
+    // === END PULSESHIFT CUSTOM EXTENSION ===
     $$.mainRegion.attr('class', $$.classRegion.bind($$));
-    $$.mainRegion.exit().transition().duration(duration).style("opacity", 0).remove();
+    $$.mainRegion.exit().transition().duration(duration).style('opacity', 0).remove();
 };
 c3_chart_internal_fn.redrawRegion = function (withTransition) {
     // === START PULSESHIFT CUSTOM EXTENSION ===
@@ -7852,13 +7856,13 @@ c3_chart_internal_fn.redrawRegion = function (withTransition) {
         y = $$.regionY.bind($$),
         w = $$.regionWidth.bind($$),
         h = $$.regionHeight.bind($$);
-    return [(withTransition ? regions.transition() : regions).attr("x", x).attr("y", y).attr("width", w).attr("height", h).style("fill-opacity", function (d) {
+    return [(withTransition ? regions.transition() : regions).attr('x', x).attr('y', y).attr('width', w).attr('height', h).style('fill-opacity', function (d) {
         return isValue(d.opacity) ? d.opacity : 0.2;
-    }), (withTransition ? regionStripes.transition() : regionStripes).attr("x", x).attr("y", y).attr("width", w).attr("height", 2).style("fill-opacity", function (d) {
+    }), (withTransition ? regionStripes.transition() : regionStripes).attr('x', x).attr('y', y).attr('width', w).attr('height', 2).style('fill-opacity', function (d) {
         return isValue(d.opacity) ? d.opacity : 1;
-    }), (withTransition ? regionTexts.transition() : regionTexts).attr("x", -50).attr("y", function (d) {
+    }), (withTransition ? regionTexts.transition() : regionTexts).attr('x', -50).attr('y', function (d) {
         return x(d) + w(d) / 2;
-    }).style("fill-opacity", function (d) {
+    }).style('fill-opacity', function (d) {
         return isValue(d.opacity) ? d.opacity : 1;
     })];
     // === END PULSESHIFT CUSTOM EXTENSION ===
