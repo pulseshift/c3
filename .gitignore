@@ -10,3 +10,6 @@ build
 
 # coverage report
 /coverage
+
+# IDE / editor configs
+.vscode

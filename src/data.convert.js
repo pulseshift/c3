@@ -137,7 +137,8 @@ c3_chart_internal_fn.convertColumnsToData = (columns) => {
 };
 
 c3_chart_internal_fn.convertDataToTargets = function (data, appendXs) {
-    var $$ = this, config = $$.config,
+    var $$ = this,
+        config = $$.config,
         ids = $$.d3.keys(data[0]).filter($$.isNotX, $$),
         xs = $$.d3.keys(data[0]).filter($$.isX, $$),
         targets;
@@ -149,26 +150,27 @@ c3_chart_internal_fn.convertDataToTargets = function (data, appendXs) {
         if ($$.isCustomX() || $$.isTimeSeries()) {
             // if included in input data
             if (xs.indexOf(xKey) >= 0) {
-                $$.data.xs[id] = (appendXs && $$.data.xs[id] ? $$.data.xs[id] : []).concat(
-                    data.map(function (d) { return d[xKey]; })
-                        .filter(isValue)
-                        .map(function (rawX, i) { return $$.generateTargetX(rawX, id, i); })
-                );
+                $$.data.xs[id] = (appendXs && $$.data.xs[id] ? $$.data.xs[id] : []).concat(data.map(function (d) {
+                    return d[xKey];
+                }).filter(isValue).map(function (rawX, i) {
+                    return $$.generateTargetX(rawX, id, i);
+                }));
             }
             // if not included in input data, find from preloaded data of other id's x
             else if (config.data_x) {
-                $$.data.xs[id] = $$.getOtherTargetXs();
-            }
-            // if not included in input data, find from preloaded data
-            else if (notEmpty(config.data_xs)) {
-                $$.data.xs[id] = $$.getXValuesOfXKey(xKey, $$.data.targets);
-            }
+                    $$.data.xs[id] = $$.getOtherTargetXs();
+                }
+                // if not included in input data, find from preloaded data
+                else if (notEmpty(config.data_xs)) {
+                        $$.data.xs[id] = $$.getXValuesOfXKey(xKey, $$.data.targets);
+                    }
             // MEMO: if no x included, use same x of current will be used
         } else {
-            $$.data.xs[id] = data.map(function (d, i) { return i; });
+            $$.data.xs[id] = data.map(function (d, i) {
+                return i;
+            });
         }
     });
-
 
     // check x is defined
     ids.forEach(function (id) {
@@ -184,10 +186,26 @@ c3_chart_internal_fn.convertDataToTargets = function (data, appendXs) {
             id: convertedId,
             id_org: id,
             values: data.map(function (d, i) {
-                var xKey = $$.getXKey(id), rawX = d[xKey],
-                    value = d[id] !== null && !isNaN(d[id]) ? +d[id] : null, x;
+                var xKey = $$.getXKey(id),
+                    rawX = d[xKey],
+
+                    // ===== START OPAL EXTENSION =====
+                    // introducing ribbonYs, which is a pair of y values at the same x value: a high and a low
+                    fnIsValidRibbonValue = function (val) {
+                        var isValidHigh = typeof val === 'object' && val.hasOwnProperty('high') && !isNaN(val.high) ;
+                        var isValidLow = typeof val === 'object' && val.hasOwnProperty('low') && !isNaN(val.low);
+                        return isValidHigh && isValidLow;
+                    },
+
+                    //add value if valid and no ribbon type
+                    value = d[id] !== null && !isNaN(d[id]) && (!$$.isRibbonType(id))? +d[id] : null,
+                    //add y value pair if valid and ribbon type
+                    ribbonYvalues = !($$.isRibbonType(id))? undefined : fnIsValidRibbonValue(d[id]) ? d[id] : undefined,
+
+                    x;
+
                 // use x as categories if custom x and categorized
-                if ($$.isCustomX() && $$.isCategorized() && !isUndefined(rawX)) {
+                if ($$.isCustomX() && $$.isCategorized() && index === 0 && !isUndefined(rawX)) {
                     if (index === 0 && i === 0) {
                         config.axis_x_categories = [];
                     }
@@ -197,14 +215,18 @@ c3_chart_internal_fn.convertDataToTargets = function (data, appendXs) {
                         config.axis_x_categories.push(rawX);
                     }
                 } else {
-                    x  = $$.generateTargetX(rawX, id, i);
+                    x = $$.generateTargetX(rawX, id, i);
                 }
                 // mark as x = undefined if value is undefined and filter to remove after mapped
                 if (isUndefined(d[id]) || $$.data.xs[id].length <= i) {
                     x = undefined;
                 }
-                return {x: x, value: value, id: convertedId};
-            }).filter(function (v) { return isDefined(v.x); })
+                return { x: x, value: value, id: convertedId, ribbonYs: ribbonYvalues};
+                // ===== END OPAL EXTENSION =====
+
+            }).filter(function (v) {
+                return isDefined(v.x);
+            })
         };
     });
 
@@ -236,7 +258,9 @@ c3_chart_internal_fn.convertDataToTargets = function (data, appendXs) {
 
     // set target types
     if (config.data_type) {
-        $$.setTargetType($$.mapToIds(targets).filter(function (id) { return ! (id in config.data_types); }), config.data_type);
+        $$.setTargetType($$.mapToIds(targets).filter(function (id) {
+            return !(id in config.data_types);
+        }), config.data_type);
     }
 
     // cache as original id keyed
@@ -245,4 +269,4 @@ c3_chart_internal_fn.convertDataToTargets = function (data, appendXs) {
     });
 
     return targets;
-};
+}

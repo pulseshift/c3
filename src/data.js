@@ -200,11 +200,16 @@ c3_chart_internal_fn.addHiddenLegendIds = function (targetIds) {
 c3_chart_internal_fn.removeHiddenLegendIds = function (targetIds) {
     this.hiddenLegendIds = this.hiddenLegendIds.filter(function (id) { return targetIds.indexOf(id) < 0; });
 };
-c3_chart_internal_fn.getValuesAsIdKeyed = function (targets) {
+// function needed an additional parameter to tell whether the highs or the lows of the ribbons are supposed to be read
+c3_chart_internal_fn.getValuesAsIdKeyed = function (targets, ribbonHighs) {
+    var $$ = this;
     var ys = {};
     targets.forEach(function (t) {
         ys[t.id] = [];
         t.values.forEach(function (v) {
+            if($$.isRibbonType(v.id))
+            ribbonHighs ? ys[t.id].push(v.ribbonYs.high) : ys[t.id].push(v.ribbonYs.low);
+            else
             ys[t.id].push(v.value);
         });
     });

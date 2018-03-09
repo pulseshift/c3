@@ -3,7 +3,7 @@ import { isValue, isDefined, diffDomain, notEmpty } from './util';
 
 c3_chart_internal_fn.getYDomainMin = function (targets) {
     var $$ = this, config = $$.config,
-        ids = $$.mapToIds(targets), ys = $$.getValuesAsIdKeyed(targets),
+        ids = $$.mapToIds(targets), ys = $$.getValuesAsIdKeyed(targets, false),
         j, k, baseId, idsInGroup, id, hasNegativeValue;
     if (config.data_groups.length > 0) {
         hasNegativeValue = $$.hasNegativeValueInTargets(targets);
@@ -34,7 +34,7 @@ c3_chart_internal_fn.getYDomainMin = function (targets) {
 };
 c3_chart_internal_fn.getYDomainMax = function (targets) {
     var $$ = this, config = $$.config,
-        ids = $$.mapToIds(targets), ys = $$.getValuesAsIdKeyed(targets),
+        ids = $$.mapToIds(targets), ys = $$.getValuesAsIdKeyed(targets, true),
         j, k, baseId, idsInGroup, id, hasPositiveValue;
     if (config.data_groups.length > 0) {
         hasPositiveValue = $$.hasPositiveValueInTargets(targets);
