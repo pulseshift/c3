@@ -239,7 +239,11 @@ c3_chart_internal_fn.redrawArea = function (drawArea, withTransition) {
         (withTransition ? this.mainArea.transition(Math.random().toString()) : this.mainArea)
             .attr("d", drawArea)
             .style("fill", this.color)
-            .style("opacity", this.orgAreaOpacity)
+            // === END PULSESHIFT BUG FIX: initial opacity is not displayed correct ===
+            .style('opacity', function() {
+                return this.orgAreaOpacity
+            })
+            // === END PULSESHIFT BUG FIX: initial opacity is not displayed correct ===
     ];
 };
 c3_chart_internal_fn.generateDrawArea = function (areaIndices, isSub) {

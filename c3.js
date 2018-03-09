@@ -8462,7 +8462,13 @@ c3_chart_internal_fn.updateArea = function (durationForExit) {
     $$.mainArea.exit().transition().duration(durationForExit).style('opacity', 0).remove();
 };
 c3_chart_internal_fn.redrawArea = function (drawArea, withTransition) {
-    return [(withTransition ? this.mainArea.transition(Math.random().toString()) : this.mainArea).attr("d", drawArea).style("fill", this.color).style("opacity", this.orgAreaOpacity)];
+    return [(withTransition ? this.mainArea.transition(Math.random().toString()) : this.mainArea).attr("d", drawArea).style("fill", this.color)
+    // === END PULSESHIFT BUG FIX: initial opacity is not displayed correct ===
+    .style('opacity', function () {
+        return this.orgAreaOpacity;
+    })
+    // === END PULSESHIFT BUG FIX: initial opacity is not displayed correct ===
+    ];
 };
 c3_chart_internal_fn.generateDrawArea = function (areaIndices, isSub) {
     var $$ = this,
