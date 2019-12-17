@@ -1,18 +1,19 @@
 import { c3 } from './core';
 
 import './polyfill';
-
 import './api.axis';
 import './api.category';
 import './api.chart';
 import './api.color';
 import './api.data';
+import './api.donut';
 import './api.flow';
 import './api.focus';
 import './api.grid';
 import './api.group';
 import './api.legend';
 import './api.load';
+import './api.pie';
 import './api.region';
 import './api.selection';
 import './api.show';
@@ -48,6 +49,9 @@ import './size';
 import './subchart';
 import './text';
 import './title';
+import './colorscale';
+import './stanford';
+import './stanfordelements';
 import './tooltip';
 import './type';
 import './ua';

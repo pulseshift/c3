@@ -1,8 +1,8 @@
-import { c3_chart_fn } from './core';
+import { Chart } from './core';
 import { isValue, isDefined } from './util';
 
-c3_chart_fn.axis = function () {};
-c3_chart_fn.axis.labels = function (labels) {
+Chart.prototype.axis = function () {};
+Chart.prototype.axis.labels = function (labels) {
     var $$ = this.internal;
     if (arguments.length) {
         Object.keys(labels).forEach(function (axisId) {
@@ -12,7 +12,7 @@ c3_chart_fn.axis.labels = function (labels) {
     }
     // TODO: return some values?
 };
-c3_chart_fn.axis.max = function (max) {
+Chart.prototype.axis.max = function (max) {
     var $$ = this.internal, config = $$.config;
     if (arguments.length) {
         if (typeof max === 'object') {
@@ -31,7 +31,7 @@ c3_chart_fn.axis.max = function (max) {
         };
     }
 };
-c3_chart_fn.axis.min = function (min) {
+Chart.prototype.axis.min = function (min) {
     var $$ = this.internal, config = $$.config;
     if (arguments.length) {
         if (typeof min === 'object') {
@@ -50,7 +50,7 @@ c3_chart_fn.axis.min = function (min) {
         };
     }
 };
-c3_chart_fn.axis.range = function (range) {
+Chart.prototype.axis.range = function (range) {
     if (arguments.length) {
         if (isDefined(range.max)) { this.axis.max(range.max); }
         if (isDefined(range.min)) { this.axis.min(range.min); }
@@ -62,10 +62,31 @@ c3_chart_fn.axis.range = function (range) {
     }
 };
 
+Chart.prototype.axis.types = function (types) {
+    const $$ = this.internal;
+    if (types === undefined) {
+        return {
+            y: $$.config.axis_y_type,
+            y2: $$.config.axis_y2_type
+        };
+    } else {
+        if (isDefined(types.y)) {
+            $$.config.axis_y_type = types.y;
+        }
+
+        if (isDefined(types.y2)) {
+            $$.config.axis_y2_type = types.y2;
+        }
+
+        $$.updateScales();
+        $$.redraw();
+    }
+};
+
 // === START PULSESHIFT CUSTOM EXTENSION ===
 
 // show/hide Y2 axis by API
-c3_chart_fn.axis.showY2 = function(shown) {
+Chart.prototype.axis.showY2 = function(shown) {
     let $$ = this.internal, config = $$.config
     config.axis_y2_show = !!shown
     $$.axes.y2.style(
@@ -76,7 +97,7 @@ c3_chart_fn.axis.showY2 = function(shown) {
 }
 
 // show/hide Y axis by API
-c3_chart_fn.axis.showY = function(shown) {
+Chart.prototype.axis.showY = function(shown) {
     let $$ = this.internal, config = $$.config
     config.axis_y_show = !!shown
     $$.axes.y.style('visibility', config.axis_y_show ? 'visible' : 'hidden')
@@ -84,7 +105,7 @@ c3_chart_fn.axis.showY = function(shown) {
 }
 
 // show/hide X axis by API
-c3_chart_fn.axis.showX = function(shown) {
+Chart.prototype.axis.showX = function(shown) {
     let $$ = this.internal, config = $$.config
     config.axis_x_show = !!shown
     $$.axes.x.style('visibility', config.axis_x_show ? 'visible' : 'hidden')

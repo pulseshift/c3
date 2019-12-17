@@ -1,3 +1,19 @@
+ describe('load without data', function () {
+
+    var chart, args;
+
+    beforeAll(function () {
+        args = {
+            data: {}
+        };
+    });
+
+    it('throws when data is an empty object', () => {
+        expect(() => window.initChart(chart, args))
+            .toThrowError(Error, /url or json or rows or columns is required/);
+    });
+});
+
 describe('c3 chart data', function () {
     'use strict';
 
@@ -164,6 +180,37 @@ describe('c3 chart data', function () {
             });
         });
     });
+
+    describe('load rows', function () {
+
+        beforeAll(function () {
+            args = {
+                data: {
+                    rows: [
+                      ['data1', 'data2', 'data3'],
+                      [90, 120, 300],
+                      [40, 160, 240],
+                      [50, 200, 290],
+                      [120, 160, 230],
+                      [80, 130, 300],
+                      [90, 220, 320]
+                    ]
+                }
+            };
+        });
+
+        it('should draw correctly', function () {
+            var expectedCx = [6, 124, 241,358,475,593],
+                expectedCy = [327, 391, 378,289,340,327];
+            d3.selectAll('.c3-circles-data1 .c3-circle').each(function (d, i) {
+                var circle = d3.select(this);
+                expect(+circle.attr('cx')).toBeCloseTo(expectedCx[i], 0);
+                expect(+circle.attr('cy')).toBeCloseTo(expectedCy[i], 0);
+            });
+        });
+    });
+
+
 
     describe('function in data.order', function () {
         beforeAll(function () {
@@ -1370,4 +1417,129 @@ describe('c3 chart data', function () {
 
     });
 
+    describe('data.stack', function() {
+        beforeAll(() => {
+            args = {
+                data: {
+                    columns: [
+                        ["data1", 230, 50, 300],
+                        ["data2", 198, 87, 580]
+                    ],
+                    type: "bar",
+                    groups: [
+                        ["data1", "data2"]
+                    ],
+                    stack: {
+                        normalize: true
+                    }
+                }
+            };
+        });
+
+        const getChartHeight = () =>
+            +chart.internal.main.select(`.c3-event-rect`).attr("height") - 1;
+
+        it("check for the normalized y axis tick in percentage", () => {
+            const tick = chart.internal.main.selectAll(`.c3-axis-y .tick tspan`);
+
+            // check for the y axis to be in percentage
+            tick.each(function (v, i) {
+                expect(this.textContent).toEqual(`${i * 10}%`);
+            });
+        });
+
+        it("check for the normalized bar's height", () => {
+            const chartHeight = getChartHeight();
+            const bars = chart.internal.main.selectAll('.c3-bar').nodes();
+
+            bars.splice(0, 3).forEach((v, i) => {
+                expect(v.getBBox().height + bars[i].getBBox().height).toEqual(chartHeight);
+            });
+        });
+
+        it("check when hiding data", done => {
+            const chartHeight = getChartHeight();
+
+            // when
+            chart.hide("data1");
+
+            setTimeout(() => {
+                chart.internal.main.selectAll(`.c3-target-data2 path`).each(function() {
+                    expect(this.getBBox().height).toBe(chartHeight);
+                });
+
+                done();
+            }, 500);
+        });
+
+        describe('timeseries chart', () => {
+            beforeAll(function () {
+                args = {
+                    data: {
+                        x: 'date',
+                        columns: [
+                            ['date', '2012-12-24', '2012-12-25', '2012-12-26'],
+                            ['data1', 30, 200, 400],
+                            ['data2', 50, 60, 50],
+                        ],
+                        groups: [
+                            ['data1', 'data2'],
+                        ],
+                        type: 'bar',
+                        stack: {
+                            normalize: true
+                        }
+                    },
+                    axis: {
+                        x: {
+                            type: 'timeseries',
+                        }
+                    }
+                };
+            });
+
+            it("check for the normalized bar's height", () => {
+                const chartHeight = getChartHeight();
+                const bars = chart.internal.main.selectAll('.c3-bar').nodes();
+
+                expect(document.hidden).toBeFalsy();
+
+                bars.splice(0, 3).forEach((v, i) => {
+                    expect(v.getBBox().height + bars[i].getBBox().height).toEqual(chartHeight);
+                });
+            });
+        });
+
+        describe('area chart', () => {
+            beforeAll(() => {
+                args = {
+                    data: {
+                        columns: [
+                            ["data1", 200, 387, 123],
+                            ["data2", 200, 387, 123]
+                        ],
+                        type: "area",
+                        groups: [
+                            ["data1", "data2"]
+                        ],
+                        stack: {
+                            normalize: true
+                        }
+                    }
+                };
+            });
+
+            it("check for the normalized area's height", () => {
+                const chartHeight = getChartHeight();
+
+                let areaHeight = 0;
+                chart.internal.main.selectAll('.c3-area').each(function() {
+                    areaHeight += this.getBBox().height;
+                });
+
+                expect(document.hidden).toBeFalsy();
+                expect(areaHeight).toEqual(chartHeight);
+            });
+        });
+    });
 });

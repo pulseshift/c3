@@ -1,12 +1,22 @@
 import CLASS from './class';
-import { c3_chart_internal_fn } from './core';
-import { isValue, isFunction, isArray, isString, sanitise } from './util';
+import {
+    ChartInternal
+} from './core';
+import {
+    isValue,
+    isFunction,
+    isArray,
+    isString,
+    sanitise
+} from './util';
 
-c3_chart_internal_fn.initTooltip = function () {
-    var $$ = this, config = $$.config, i;
+ChartInternal.prototype.initTooltip = function () {
+    var $$ = this,
+        config = $$.config,
+        i;
     $$.tooltip = $$.selectChart
         .style("position", "relative")
-      .append("div")
+        .append("div")
         .attr('class', CLASS.tooltipContainer)
         .style("position", "absolute")
         .style("pointer-events", "none")
@@ -16,7 +26,9 @@ c3_chart_internal_fn.initTooltip = function () {
         if ($$.isTimeSeries() && isString(config.tooltip_init_x)) {
             config.tooltip_init_x = $$.parseDate(config.tooltip_init_x);
             for (i = 0; i < $$.data.targets[0].values.length; i++) {
-                if (($$.data.targets[0].values[i].x - config.tooltip_init_x) === 0) { break; }
+                if (($$.data.targets[0].values[i].x - config.tooltip_init_x) === 0) {
+                    break;
+                }
             }
             config.tooltip_init_x = i;
         }
@@ -28,8 +40,9 @@ c3_chart_internal_fn.initTooltip = function () {
             .style("display", "block");
     }
 };
-c3_chart_internal_fn.getTooltipSortFunction = function() {
-    var $$ = this, config = $$.config;
+ChartInternal.prototype.getTooltipSortFunction = function () {
+    var $$ = this,
+        config = $$.config;
 
     if (config.data_groups.length === 0 || config.tooltip_order !== undefined) {
         // if data are not grouped or if an order is specified
@@ -40,13 +53,13 @@ c3_chart_internal_fn.getTooltipSortFunction = function() {
             order = config.data_order;
         }
 
-        var valueOf = function(obj) {
+        var valueOf = function (obj) {
             return obj ? obj.value : null;
         };
 
         // if data are not grouped, we sort them by their value
         if (isString(order) && order.toLowerCase() === 'asc') {
-            return function(a, b) {
+            return function (a, b) {
                 return valueOf(a) - valueOf(b);
             };
         } else if (isString(order) && order.toLowerCase() === 'desc') {
@@ -65,10 +78,10 @@ c3_chart_internal_fn.getTooltipSortFunction = function() {
                 sortFunction = function (a, b) {
                     return order(a ? {
                         id: a.id,
-                        values: [ a ]
+                        values: [a]
                     } : null, b ? {
                         id: b.id,
-                        values: [ b ]
+                        values: [b]
                     } : null);
                 };
             }
@@ -76,13 +89,13 @@ c3_chart_internal_fn.getTooltipSortFunction = function() {
             return sortFunction;
 
         } else if (isArray(order)) {
-            return function(a, b) {
+            return function (a, b) {
                 return order.indexOf(a.id) - order.indexOf(b.id);
             };
         }
     } else {
         // if data are grouped, we follow the order of grouped targets
-        var ids = $$.orderTargets($$.data.targets).map(function(i) {
+        var ids = $$.orderTargets($$.data.targets).map(function (i) {
             return i.id;
         });
 
@@ -92,13 +105,14 @@ c3_chart_internal_fn.getTooltipSortFunction = function() {
             ids = ids.reverse();
         }
 
-        return function(a, b) {
+        return function (a, b) {
             return ids.indexOf(a.id) - ids.indexOf(b.id);
         };
     }
 };
-c3_chart_internal_fn.getTooltipContent = function (d, defaultTitleFormat, defaultValueFormat, color) {
-    var $$ = this, config = $$.config,
+ChartInternal.prototype.getTooltipContent = function (d, defaultTitleFormat, defaultValueFormat, color) {
+    var $$ = this,
+        config = $$.config,
         titleFormat = config.tooltip_format_title || defaultTitleFormat,
         nameFormat = config.tooltip_format_name || function (name) { return name; },
         valueFormat = config.tooltip_format_value || defaultValueFormat,
@@ -165,17 +179,38 @@ c3_chart_internal_fn.getTooltipContent = function (d, defaultTitleFormat, defaul
     for (i = 0; i < completeArray.length; i++) {
         if (! (completeArray[i] && (completeArray[i].value || completeArray[i].value === 0))) { continue; }
 
-        if (! text) {
-            title = sanitise(titleFormat ? titleFormat(completeArray[i].x) : completeArray[i].x);
-            text = "<table class='" + $$.CLASS.tooltip + "'>" + (title || title === 0 ? "<tr><th colspan='2'>" + title + "</th></tr>" : "");
+        if($$.isStanfordGraphType()) {
+            // Custom tooltip for stanford plots
+            if (!text) {
+                title = $$.getStanfordTooltipTitle(completeArray[i]);
+                text = "<table class='" + $$.CLASS.tooltip + "'>" + title;
+            }
+
+            bgcolor = $$.getStanfordPointColor(completeArray[i]);
+            name = sanitise(config.data_epochs); // Epochs key name
+            value = completeArray[i].epochs;
+        } else {
+            // Regular tooltip
+            if (!text) {
+                title = sanitise(titleFormat ? titleFormat(completeArray[i].x, completeArray[i].index) : completeArray[i].x);
+                text = "<table class='" + $$.CLASS.tooltip + "'>" + (title || title === 0 ? "<tr><th colspan='2'>" + title + "</th></tr>" : "");
+            }
+
+            value = sanitise(valueFormat(completeArray[i].value, completeArray[i].ratio, completeArray[i].id, completeArray[i].index, completeArray));
+            if (value !== undefined) {
+                // Skip elements when their name is set to null
+                if (completeArray[i].name === null) {
+                    continue;
+                }
+
+                name = sanitise(nameFormat(completeArray[i].name, completeArray[i].ratio, completeArray[i].id, completeArray[i].index));
+                bgcolor = $$.levelColor ? $$.levelColor(completeArray[i].value) : color(completeArray[i].id);
+            }
         }
 
-        value = sanitise(valueFormat(completeArray[i].value, completeArray[i].ratio, completeArray[i].id, completeArray[i].index, completeArray));
         if (value !== undefined) {
             // Skip elements when their name is set to null
             if (completeArray[i].name === null) { continue; }
-            name = sanitise(nameFormat(completeArray[i].name, completeArray[i].ratio, completeArray[i].id, completeArray[i].index));
-            bgcolor = $$.levelColor ? $$.levelColor(completeArray[i].value) : color(completeArray[i].id);
 
             text += "<tr class='" + $$.CLASS.tooltipName + "-" + $$.getTargetSelectorSuffix(completeArray[i].id) + "'>";
             text += "<td class='name'><span style='background-color:" + bgcolor + "'></span>" + name + "</td>";
@@ -185,12 +220,14 @@ c3_chart_internal_fn.getTooltipContent = function (d, defaultTitleFormat, defaul
     }
     return text + "</table>";
 };
-c3_chart_internal_fn.tooltipPosition = function (dataToShow, tWidth, tHeight, element) {
-    var $$ = this, config = $$.config, d3 = $$.d3;
+ChartInternal.prototype.tooltipPosition = function (dataToShow, tWidth, tHeight, element) {
+    var $$ = this,
+        config = $$.config,
+        d3 = $$.d3;
     var svgLeft, tooltipLeft, tooltipRight, tooltipTop, chartRight;
     var forArc = $$.hasArcType(),
         mouse = d3.mouse(element);
-  // Determin tooltip position
+    // Determin tooltip position
     if (forArc) {
         tooltipLeft = (($$.width - ($$.isLegendRight ? $$.getLegendWidth() : 0)) / 2) + mouse[0];
         tooltipTop = ($$.hasType('gauge') ? $$.height : $$.height / 2) + mouse[1] + 20;
@@ -219,7 +256,10 @@ c3_chart_internal_fn.tooltipPosition = function (dataToShow, tWidth, tHeight, el
     if (tooltipTop < 0) {
         tooltipTop = 0;
     }
-    return {top: tooltipTop, left: tooltipLeft};
+    return {
+        top: tooltipTop,
+        left: tooltipLeft
+    };
 };
 c3_chart_internal_fn.showTooltip = function (selectedData, element) {
     var $$ = this,
@@ -244,6 +284,6 @@ c3_chart_internal_fn.showTooltip = function (selectedData, element) {
     // Set tooltip
     $$.tooltip.style("top", position.top + "px").style("left", position.left + 'px');
 };
-c3_chart_internal_fn.hideTooltip = function () {
+ChartInternal.prototype.hideTooltip = function () {
     this.tooltip.style("display", "none");
 };

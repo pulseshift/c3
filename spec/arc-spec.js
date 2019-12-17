@@ -7,6 +7,41 @@ describe('c3 chart arc', function () {
         chart = window.initChart(chart, args, done);
     });
 
+    describe('unloads correctly', function() {
+
+      beforeAll(function () {
+        args = {
+            data: {
+                columns: [
+                    ['data1', 30],
+                    ['data2', 150],
+                    ['data3', 120]
+                ],
+                type: 'pie'
+            },
+            transition: {
+              duration: 500
+            }
+        };
+      });
+
+      it('unloads without error', function(done) {
+        chart.load({
+          columns: [['data2', 30, 20, 50, 40, 60, 50]]
+        });
+
+      
+        setTimeout(function () {
+            chart.destroy();
+        }, 200);
+
+        setTimeout(function() {
+          expect(chart.internal.config).toBeNull();
+          done();
+        }, 501);
+      });
+    });
+
     describe('show pie chart', function () {
 
         beforeAll(function () {
@@ -41,9 +76,9 @@ describe('c3 chart arc', function () {
         });
 
         it('should have correct d', function () {
-            expect(d3.select('.c3-arc-data1').attr('d')).toMatch(/M-124\..+,-171\..+A211\..+,211\..+ 0 0,1 -3\..+,-211\..+L0,0Z/);
-            expect(d3.select('.c3-arc-data2').attr('d')).toMatch(/M1\..+,-211\..+A211\..+,211\..+ 0 0,1 1\..+,211\..+L0,0Z/);
-            expect(d3.select('.c3-arc-data3').attr('d')).toMatch(/M1\..+,211\..+A211\..+,211\..+ 0 0,1 -124\..+,-171\..+L0,0Z/);
+            expect(d3.select('.c3-arc-data1').attr('d')).toMatch(/M-124\..+,-171\..+A211\..+,211\..+,0,0,1,-3\..+,-211\..+L0,0Z/);
+            expect(d3.select('.c3-arc-data2').attr('d')).toMatch(/M1\..+,-211\..+211\..+,211\..+,0,0,1,1\..+,211\..+L0,0Z/);
+            expect(d3.select('.c3-arc-data3').attr('d')).toMatch(/M1\..+,211\..+211\..+,211\..+,0,0,1,-124\..+,-171\..+L0,0Z/);
         });
 
         describe('with data id that can be converted to a color', function () {
@@ -57,7 +92,7 @@ describe('c3 chart arc', function () {
 
             it('should have correct d even if data id can be converted to a color', function (done) {
                 setTimeout(function () {
-                    expect(d3.select('.c3-arc-black').attr('d')).toMatch(/M-124\..+,-171\..+A211\..+,211\..+ 0 0,1 -3\..+,-211\..+L0,0Z/);
+                    expect(d3.select('.c3-arc-black').attr('d')).toMatch(/M-124\..+,-171\..+A211\..+,211\..+,0,0,1,-3\..+,-211\..+L0,0Z/);
                     done();
                 }, 500);
             });
@@ -173,6 +208,50 @@ describe('c3 chart arc', function () {
         });
     });
 
+    describe('config donut chart', function() {
+        beforeAll(function () {
+            args = {
+                data: {
+                    columns: [
+                        ['data1', 30],
+                        ['data2', 150],
+                        ['data3', 120]
+                    ],
+                    type: 'donut'
+                },
+                donut: {
+                    padAngle: 0.05
+                }
+            };
+        });
+
+        it('can configure padAngle', function () {
+            expect(chart.internal.pie.padAngle()()).toBe(0.05);
+        });
+    });
+
+    describe('config pie chart', function() {
+        beforeAll(function () {
+            args = {
+                data: {
+                    columns: [
+                        ['data1', 30],
+                        ['data2', 150],
+                        ['data3', 120]
+                    ],
+                    type: 'pie'
+                },
+                pie: {
+                    padAngle: 0.05
+                }
+            };
+        });
+
+        it('can configure padAngle', function () {
+            expect(chart.internal.pie.padAngle()()).toBe(0.05);
+        });
+    });
+
     describe('show gauge', function () {
 
         describe('with a 180 degree gauge', function(){
@@ -198,7 +277,7 @@ describe('c3 chart arc', function () {
                         .select('g.c3-shapes.c3-shapes-data.c3-arcs.c3-arcs-data')
                         .select('path.c3-shape.c3-shape.c3-arc.c3-arc-data');
 
-                expect(data.attr('d')).toMatch(/-258.4,-3\..+A258.4,258.4 0 0,1 209\..+,-151\..+L200\..+,-146\..+A248.39999999999998,248.39999999999998 0 0,0 -248.39999999999998,-3\..+Z/);
+                expect(data.attr('d')).toMatch(/-258.4,-3\..+A258.4,258.4,0,0,1,209\..+,-151\..+L200\..+,-146\..+A248.39999999999998,248.39999999999998,0,0,0,-248.39999999999998,-3\..+Z/);
             });
         });
 
@@ -209,15 +288,14 @@ describe('c3 chart arc', function () {
                         width: 10,
                         max: 10,
                         expand: true,
-                        fullCircle: true
+                        fullCircle: true,
+                        startingAngle: Math.PI/2
                     },
                     data: {
                         columns: [
                             ['data', 8]
                         ],
-                        type: 'gauge',
-                        fullCircle: true,
-                        startingAngle: Math.PI/2
+                        type: 'gauge'
                     }
                 };
             });
@@ -228,8 +306,7 @@ describe('c3 chart arc', function () {
                         .select('g.c3-shapes.c3-shapes-data.c3-arcs.c3-arcs-data')
                         .select('path.c3-shape.c3-shape.c3-arc.c3-arc-data');
 
-                // This test has bee updated to make tests pass. @TODO double-check this test is accurate.
-                expect(data.attr('d')).toMatch(/M-180.*?,-2\..+A180.*?,180.*? 0 1,1 -55.*?,171.*?L-52.*?,161.*?A170.*?,170.*? 0 1,0 -170.*?,-2.*?Z/);
+                expect(data.attr('d')).toMatch(/^M180/);
             });
 
             describe('with labels use custom text', function() {
@@ -253,9 +330,7 @@ describe('c3 chart arc', function () {
                             columns: [
                                 ['data', 8]
                             ],
-                            type: 'gauge',
-                            fullCircle: true,
-                            startingAngle: Math.PI/2
+                            type: 'gauge'
                         }
                     };
                 });

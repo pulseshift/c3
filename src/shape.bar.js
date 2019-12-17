@@ -1,22 +1,22 @@
 import CLASS from './class';
-import { c3_chart_internal_fn } from './core';
-import { isValue } from './util';
+import { ChartInternal } from './core';
+import { getBBox, isValue, isWithinBox } from './util';
 
-c3_chart_internal_fn.initBar = function () {
+ChartInternal.prototype.initBar = function () {
     var $$ = this;
     $$.main.select('.' + CLASS.chart).append("g")
         .attr("class", CLASS.chartBars);
 };
-c3_chart_internal_fn.updateTargetsForBar = function (targets) {
+ChartInternal.prototype.updateTargetsForBar = function (targets) {
     var $$ = this, config = $$.config,
-        mainBarUpdate, mainBarEnter,
+        mainBars, mainBarEnter,
         classChartBar = $$.classChartBar.bind($$),
         classBars = $$.classBars.bind($$),
         classFocus = $$.classFocus.bind($$);
-    mainBarUpdate = $$.main.select('.' + CLASS.chartBars).selectAll('.' + CLASS.chartBar)
+    mainBars = $$.main.select('.' + CLASS.chartBars).selectAll('.' + CLASS.chartBar)
         .data(targets)
         .attr('class', function (d) { return classChartBar(d) + classFocus(d); });
-    mainBarEnter = mainBarUpdate.enter().append('g')
+    mainBarEnter = mainBars.enter().append('g')
         .attr('class', classChartBar)
         .style("pointer-events", "none");
     // Bars for each data
@@ -25,51 +25,53 @@ c3_chart_internal_fn.updateTargetsForBar = function (targets) {
         .style("cursor", function (d) { return config.data_selection_isselectable(d) ? "pointer" : null; });
 
 };
-c3_chart_internal_fn.updateBar = function (durationForExit) {
+ChartInternal.prototype.updateBar = function (durationForExit) {
     var $$ = this,
         barData = $$.barData.bind($$),
         classBar = $$.classBar.bind($$),
         initialOpacity = $$.initialOpacity.bind($$),
         color = function (d) { return $$.color(d.id); };
-    $$.mainBar = $$.main.selectAll('.' + CLASS.bars).selectAll('.' + CLASS.bar)
+    var mainBar = $$.main.selectAll('.' + CLASS.bars).selectAll('.' + CLASS.bar)
         .data(barData);
-    $$.mainBar.enter().append('path')
+    var mainBarEnter = mainBar.enter().append('path')
         .attr("class", classBar)
         .style("stroke", color)
         .style("fill", color);
-    $$.mainBar
+    $$.mainBar = mainBarEnter.merge(mainBar)
         .style("opacity", initialOpacity);
-    $$.mainBar.exit().transition().duration(durationForExit)
-        .remove();
+    mainBar.exit().transition().duration(durationForExit)
+        .style("opacity", 0);
 };
-c3_chart_internal_fn.redrawBar = function (drawBar, withTransition) {
+ChartInternal.prototype.redrawBar = function (drawBar, withTransition, transition) {
+    const $$ = this;
+
     return [
-        (withTransition ? this.mainBar.transition(Math.random().toString()) : this.mainBar)
+        (withTransition ? this.mainBar.transition(transition) : this.mainBar)
             .attr('d', drawBar)
             .style("stroke", this.color)
             .style("fill", this.color)
-            .style("opacity", 1)
+            .style("opacity", (d) => $$.isTargetToShow(d.id) ? 1 : 0)
     ];
 };
-c3_chart_internal_fn.getBarW = function (axis, barTargetsNum) {
+ChartInternal.prototype.getBarW = function (axis, barTargetsNum) {
     var $$ = this, config = $$.config,
         w = typeof config.bar_width === 'number' ? config.bar_width : barTargetsNum ? (axis.tickInterval() * config.bar_width_ratio) / barTargetsNum : 0;
     return config.bar_width_max && w > config.bar_width_max ? config.bar_width_max : w;
 };
-c3_chart_internal_fn.getBars = function (i, id) {
+ChartInternal.prototype.getBars = function (i, id) {
     var $$ = this;
     return (id ? $$.main.selectAll('.' + CLASS.bars + $$.getTargetSelectorSuffix(id)) : $$.main).selectAll('.' + CLASS.bar + (isValue(i) ? '-' + i : ''));
 };
-c3_chart_internal_fn.expandBars = function (i, id, reset) {
+ChartInternal.prototype.expandBars = function (i, id, reset) {
     var $$ = this;
     if (reset) { $$.unexpandBars(); }
     $$.getBars(i, id).classed(CLASS.EXPANDED, true);
 };
-c3_chart_internal_fn.unexpandBars = function (i) {
+ChartInternal.prototype.unexpandBars = function (i) {
     var $$ = this;
     $$.getBars(i).classed(CLASS.EXPANDED, false);
 };
-c3_chart_internal_fn.generateDrawBar = function (barIndices, isSub) {
+ChartInternal.prototype.generateDrawBar = function (barIndices, isSub) {
     var $$ = this, config = $$.config,
         getPoints = $$.generateGetBarPoints(barIndices, isSub);
     return function (d, i) {
@@ -89,7 +91,7 @@ c3_chart_internal_fn.generateDrawBar = function (barIndices, isSub) {
         return path;
     };
 };
-c3_chart_internal_fn.generateGetBarPoints = function (barIndices, isSub) {
+ChartInternal.prototype.generateGetBarPoints = function (barIndices, isSub) {
     var $$ = this,
         axis = isSub ? $$.subXAxis : $$.xAxis,
         barTargetsNum = barIndices.__max__ + 1,
@@ -107,20 +109,26 @@ c3_chart_internal_fn.generateGetBarPoints = function (barIndices, isSub) {
         if ($$.config.axis_rotated) {
             if ((0 < d.value && posY < y0) || (d.value < 0 && y0 < posY)) { posY = y0; }
         }
+
+        posY -= (y0 - offset);
+
         // 4 points that make a bar
         return [
             [posX + barSpaceOffset, offset],
-            [posX + barSpaceOffset, posY - (y0 - offset)],
-            [posX + barW - barSpaceOffset, posY - (y0 - offset)],
+            [posX + barSpaceOffset, posY],
+            [posX + barW - barSpaceOffset, posY],
             [posX + barW - barSpaceOffset, offset]
         ];
     };
 };
-c3_chart_internal_fn.isWithinBar = function (that) {
-    var mouse = this.d3.mouse(that), box = that.getBoundingClientRect(),
-        seg0 = that.pathSegList.getItem(0), seg1 = that.pathSegList.getItem(1),
-        x = Math.min(seg0.x, seg1.x), y = Math.min(seg0.y, seg1.y),
-        w = box.width, h = box.height, offset = 2,
-        sx = x - offset, ex = x + w + offset, sy = y + h + offset, ey = y - offset;
-    return sx < mouse[0] && mouse[0] < ex && ey < mouse[1] && mouse[1] < sy;
+
+/**
+ * Returns whether the data point is within the given bar shape.
+ *
+ * @param mouse
+ * @param barShape
+ * @return {boolean}
+ */
+ChartInternal.prototype.isWithinBar = function (mouse, barShape) {
+    return isWithinBox(mouse, getBBox(barShape), 2);
 };

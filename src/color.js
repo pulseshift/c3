@@ -1,10 +1,10 @@
-import { c3_chart_internal_fn } from './core';
+import { ChartInternal } from './core';
 import { notEmpty } from './util';
 
-c3_chart_internal_fn.generateColor = function () {
+ChartInternal.prototype.generateColor = function () {
     var $$ = this, config = $$.config, d3 = $$.d3,
         colors = config.data_colors,
-        pattern = notEmpty(config.color_pattern) ? config.color_pattern : d3.scale.category10().range(),
+        pattern = notEmpty(config.color_pattern) ? config.color_pattern : d3.schemeCategory10,
         callback = config.data_color,
         ids = [];
 
@@ -28,14 +28,14 @@ c3_chart_internal_fn.generateColor = function () {
         return callback instanceof Function ? callback(color, d) : color;
     };
 };
-c3_chart_internal_fn.generateLevelColor = function () {
+ChartInternal.prototype.generateLevelColor = function () {
     var $$ = this, config = $$.config,
         colors = config.color_pattern,
         threshold = config.color_threshold,
         asValue = threshold.unit === 'value',
         values = threshold.values && threshold.values.length ? threshold.values : [],
         max = threshold.max || 100;
-    return notEmpty(config.color_threshold) ? function (value) {
+    return notEmpty(threshold) && notEmpty(colors) ? function (value) {
         var i, v, color = colors[colors.length - 1];
         for (i = 0; i < values.length; i++) {
             v = asValue ? value : (value * 100 / max);

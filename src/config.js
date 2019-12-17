@@ -1,7 +1,7 @@
-import { c3_chart_internal_fn } from './core';
+import { ChartInternal } from './core';
 import { isDefined } from './util';
 
-c3_chart_internal_fn.getDefaultConfig = function () {
+ChartInternal.prototype.getDefaultConfig = function () {
     var config = {
         bindto: '#chart',
         svg_classname: undefined,
@@ -13,7 +13,9 @@ c3_chart_internal_fn.getDefaultConfig = function () {
         padding_bottom: undefined,
         resize_auto: true,
         zoom_enabled: false,
-        zoom_extent: undefined,
+        zoom_initialRange: undefined,
+        zoom_type: 'scroll',
+        zoom_disableDefaultBehavior: false,
         zoom_privileged: false,
         zoom_rescale: false,
         zoom_onzoom: function () {},
@@ -30,6 +32,7 @@ c3_chart_internal_fn.getDefaultConfig = function () {
         oninit: function () {},
         onrendered: function () {},
         transition_duration: 350,
+        data_epochs: 'epochs',
         data_x: undefined,
         data_xs: {},
         data_xFormat: '%Y-%m-%d',
@@ -54,6 +57,7 @@ c3_chart_internal_fn.getDefaultConfig = function () {
         data_selection_isselectable: function () { return true; },
         data_selection_multiple: true,
         data_selection_draggable: false,
+        data_stack_normalize: false,
         data_onclick: function () {},
         data_onmouseover: function () {},
         data_onmouseout: function () {},
@@ -107,15 +111,17 @@ c3_chart_internal_fn.getDefaultConfig = function () {
         axis_x_tick_rotate: 0,
         axis_x_tick_outer: true,
         axis_x_tick_multiline: true,
+        axis_x_tick_multilineMax: 0,
         axis_x_tick_width: null,
         axis_x_max: undefined,
         axis_x_min: undefined,
         axis_x_padding: {},
         axis_x_height: undefined,
-        axis_x_extent: undefined,
+        axis_x_selection: undefined,
         axis_x_label: {},
+        axis_x_inner: undefined,
         axis_y_show: true,
-        axis_y_type: undefined,
+        axis_y_type: 'linear',
         axis_y_max: undefined,
         axis_y_min: undefined,
         axis_y_inverted: false,
@@ -127,11 +133,12 @@ c3_chart_internal_fn.getDefaultConfig = function () {
         axis_y_tick_values: null,
         axis_y_tick_rotate: 0,
         axis_y_tick_count: undefined,
-        axis_y_tick_time_value: undefined,
+        axis_y_tick_time_type: undefined,
         axis_y_tick_time_interval: undefined,
         axis_y_padding: {},
         axis_y_default: undefined,
         axis_y2_show: false,
+        axis_y2_type: 'linear',
         axis_y2_max: undefined,
         axis_y2_min: undefined,
         axis_y2_inverted: false,
@@ -181,6 +188,7 @@ c3_chart_internal_fn.getDefaultConfig = function () {
         pie_label_ratio: undefined,
         pie_expand: {},
         pie_expand_duration: 50,
+        pie_padAngle: 0,
         // gauge
         gauge_fullCircle: false,
         gauge_label_show: true,
@@ -204,8 +212,25 @@ c3_chart_internal_fn.getDefaultConfig = function () {
         donut_title: "",
         donut_expand: {},
         donut_expand_duration: 50,
+        donut_padAngle: 0,
         // spline
         spline_interpolation_type: 'cardinal',
+        // stanford
+        stanford_lines: [],
+        stanford_regions: [],
+        stanford_texts: [],
+        stanford_scaleMin: undefined,
+        stanford_scaleMax: undefined,
+        stanford_scaleWidth: undefined,
+        stanford_scaleFormat: undefined,
+        stanford_scaleValues: undefined,
+        stanford_colors: undefined,
+        stanford_padding: {
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0
+        },
         // region - region to change style
         regions: [],
         // tooltip - show when mouseover on each data
@@ -215,6 +240,7 @@ c3_chart_internal_fn.getDefaultConfig = function () {
         tooltip_format_title: undefined,
         tooltip_format_name: undefined,
         tooltip_format_value: undefined,
+        tooltip_horizontal: undefined,
         tooltip_position: undefined,
         tooltip_contents: function (d, defaultTitleFormat, defaultValueFormat, color) {
             return this.getTooltipContent ? this.getTooltipContent(d, defaultTitleFormat, defaultValueFormat, color) : '';
@@ -232,7 +258,7 @@ c3_chart_internal_fn.getDefaultConfig = function () {
             bottom: 0,
             left: 0
         },
-        title_position: 'top-center',
+        title_position: 'top-center'
     };
 
     Object.keys(this.additionalConfig).forEach(function (key) {
@@ -241,9 +267,9 @@ c3_chart_internal_fn.getDefaultConfig = function () {
 
     return config;
 };
-c3_chart_internal_fn.additionalConfig = {};
+ChartInternal.prototype.additionalConfig = {};
 
-c3_chart_internal_fn.loadConfig = function (config) {
+ChartInternal.prototype.loadConfig = function (config) {
     var this_config = this.config, target, keys, read;
     function find() {
         var key = keys.shift();

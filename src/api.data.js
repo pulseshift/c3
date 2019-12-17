@@ -1,29 +1,59 @@
-import { c3_chart_fn } from './core';
+import { Chart } from './core';
+import { isArray } from './util';
 
-c3_chart_fn.data = function (targetIds) {
+Chart.prototype.data = function (targetIds) {
     var targets = this.internal.data.targets;
     return typeof targetIds === 'undefined' ? targets : targets.filter(function (t) {
         return [].concat(targetIds).indexOf(t.id) >= 0;
     });
 };
-c3_chart_fn.data.shown = function (targetIds) {
+Chart.prototype.data.shown = function (targetIds) {
     return this.internal.filterTargetsToShow(this.data(targetIds));
 };
-c3_chart_fn.data.values = function (targetId) {
-    var targets, values = null;
+
+/**
+ * Get values of the data loaded in the chart.
+ *
+ * @param {String|Array} targetId This API returns the value of specified target.
+ * @param flat
+ * @return {Array} Data values
+ */
+Chart.prototype.data.values = function (targetId, flat = true) {
+    let values = null;
+
     if (targetId) {
-        targets = this.data(targetId);
-        values = targets[0] ? targets[0].values.map(function (d) { return d.value; }) : null;
+        const targets = this.data(targetId);
+        if (targets && isArray(targets)) {
+            values = targets.reduce((ret, v) => {
+                const dataValue = v.values.map(d => d.value);
+                if (flat) {
+                    ret = ret.concat(dataValue);
+                } else {
+                    ret.push(dataValue);
+                }
+                return ret;
+            }, []);
+        }
     }
+
     return values;
 };
-c3_chart_fn.data.names = function (names) {
+Chart.prototype.data.names = function (names) {
     this.internal.clearLegendItemTextBoxCache();
     return this.internal.updateDataAttributes('names', names);
 };
-c3_chart_fn.data.colors = function (colors) {
+Chart.prototype.data.colors = function (colors) {
     return this.internal.updateDataAttributes('colors', colors);
 };
-c3_chart_fn.data.axes = function (axes) {
+Chart.prototype.data.axes = function (axes) {
     return this.internal.updateDataAttributes('axes', axes);
+};
+
+Chart.prototype.data.stackNormalized = function (normalized) {
+    if (normalized === undefined) {
+        return this.internal.isStackNormalized();
+    }
+
+    this.internal.config.data_stack_normalize = !!normalized;
+    this.internal.redraw();
 };

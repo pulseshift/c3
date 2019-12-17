@@ -3,8 +3,6 @@ import c3 from '../src';
 window.c3 = c3;
 
 window.initDom = function () {
-    'use strict';
-
     var div = document.createElement('div');
     div.id = 'chart';
     div.style.width = '640px';
@@ -14,20 +12,15 @@ window.initDom = function () {
 };
 
 window.setMouseEvent = function(chart, name, x, y, element) {
-    'use strict';
-
     var paddingLeft = chart.internal.main.node().transform.baseVal.getItem(0).matrix.e,
         event = document.createEvent("MouseEvents");
     event.initMouseEvent(name, true, true, window,
                        0, 0, 0, x + paddingLeft, y + 5,
                        false, false, false, false, 0, null);
-    chart.internal.d3.event = event;
     if (element) { element.dispatchEvent(event); }
 };
 
 window.initChart = function (chart, args, done) {
-    'use strict';
-
     if (typeof chart === 'undefined') {
         window.initDom();
     }
