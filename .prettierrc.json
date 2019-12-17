@@ -1,0 +1,14 @@
+{
+  "printWidth": 210,
+  "semi": true,
+  "singleQuote": false,
+  "bracketSpacing": false,
+  "overrides": [
+    {
+      "files": "*.js",
+      "options": {
+        "parser": "babel-flow"
+      }
+    }
+  ]
+}

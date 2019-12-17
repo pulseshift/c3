@@ -1,14 +1,23 @@
-import CLASS from './class';
-import { ChartInternal } from './core';
-import { getPathBox } from './util';
+import CLASS from "./class";
+import {ChartInternal} from "./core";
+import {getPathBox} from "./util";
 
-ChartInternal.prototype.drag = function (mouse) {
-    var $$ = this, config = $$.config, main = $$.main, d3 = $$.d3;
+ChartInternal.prototype.drag = function(mouse) {
+    var $$ = this,
+        config = $$.config,
+        main = $$.main,
+        d3 = $$.d3;
     var sx, sy, mx, my, minX, maxX, minY, maxY;
 
-    if ($$.hasArcType()) { return; }
-    if (!config.data_selection_enabled) { return; } // do nothing if not selectable
-    if (!config.data_selection_multiple) { return; } // skip when single selection because drag is used for multiple selection
+    if ($$.hasArcType()) {
+        return;
+    }
+    if (!config.data_selection_enabled) {
+        return;
+    } // do nothing if not selectable
+    if (!config.data_selection_multiple) {
+        return;
+    } // skip when single selection because drag is used for multiple selection
 
     sx = $$.dragStart[0];
     sy = $$.dragStart[1];
@@ -16,29 +25,37 @@ ChartInternal.prototype.drag = function (mouse) {
     my = mouse[1];
     minX = Math.min(sx, mx);
     maxX = Math.max(sx, mx);
-    minY = (config.data_selection_grouped) ? $$.margin.top : Math.min(sy, my);
-    maxY = (config.data_selection_grouped) ? $$.height : Math.max(sy, my);
+    minY = config.data_selection_grouped ? $$.margin.top : Math.min(sy, my);
+    maxY = config.data_selection_grouped ? $$.height : Math.max(sy, my);
 
-    main.select('.' + CLASS.dragarea)
-        .attr('x', minX)
-        .attr('y', minY)
-        .attr('width', maxX - minX)
-        .attr('height', maxY - minY);
+    main.select("." + CLASS.dragarea)
+        .attr("x", minX)
+        .attr("y", minY)
+        .attr("width", maxX - minX)
+        .attr("height", maxY - minY);
     // TODO: binary search when multiple xs
-    main.selectAll('.' + CLASS.shapes).selectAll('.' + CLASS.shape)
-        .filter(function (d) { return config.data_selection_isselectable(d); })
-        .each(function (d, i) {
+    main.selectAll("." + CLASS.shapes)
+        .selectAll("." + CLASS.shape)
+        .filter(function(d) {
+            return config.data_selection_isselectable(d);
+        })
+        .each(function(d, i) {
             var shape = d3.select(this),
                 isSelected = shape.classed(CLASS.SELECTED),
                 isIncluded = shape.classed(CLASS.INCLUDED),
-                _x, _y, _w, _h, toggle, isWithin = false, box;
+                _x,
+                _y,
+                _w,
+                _h,
+                toggle,
+                isWithin = false,
+                box;
             if (shape.classed(CLASS.circle)) {
                 _x = shape.attr("cx") * 1;
                 _y = shape.attr("cy") * 1;
                 toggle = $$.togglePoint;
                 isWithin = minX < _x && _x < maxX && minY < _y && _y < maxY;
-            }
-            else if (shape.classed(CLASS.bar)) {
+            } else if (shape.classed(CLASS.bar)) {
                 box = getPathBox(this);
                 _x = box.x;
                 _y = box.y;
@@ -59,26 +76,39 @@ ChartInternal.prototype.drag = function (mouse) {
         });
 };
 
-ChartInternal.prototype.dragstart = function (mouse) {
-    var $$ = this, config = $$.config;
-    if ($$.hasArcType()) { return; }
-    if (! config.data_selection_enabled) { return; } // do nothing if not selectable
+ChartInternal.prototype.dragstart = function(mouse) {
+    var $$ = this,
+        config = $$.config;
+    if ($$.hasArcType()) {
+        return;
+    }
+    if (!config.data_selection_enabled) {
+        return;
+    } // do nothing if not selectable
     $$.dragStart = mouse;
-    $$.main.select('.' + CLASS.chart).append('rect')
-        .attr('class', CLASS.dragarea)
-        .style('opacity', 0.1);
+    $$.main
+        .select("." + CLASS.chart)
+        .append("rect")
+        .attr("class", CLASS.dragarea)
+        .style("opacity", 0.1);
     $$.dragging = true;
 };
 
-ChartInternal.prototype.dragend = function () {
-    var $$ = this, config = $$.config;
-    if ($$.hasArcType()) { return; }
-    if (! config.data_selection_enabled) { return; } // do nothing if not selectable
-    $$.main.select('.' + CLASS.dragarea)
-        .transition().duration(100)
-        .style('opacity', 0)
+ChartInternal.prototype.dragend = function() {
+    var $$ = this,
+        config = $$.config;
+    if ($$.hasArcType()) {
+        return;
+    }
+    if (!config.data_selection_enabled) {
+        return;
+    } // do nothing if not selectable
+    $$.main
+        .select("." + CLASS.dragarea)
+        .transition()
+        .duration(100)
+        .style("opacity", 0)
         .remove();
-    $$.main.selectAll('.' + CLASS.shape)
-        .classed(CLASS.INCLUDED, false);
+    $$.main.selectAll("." + CLASS.shape).classed(CLASS.INCLUDED, false);
     $$.dragging = false;
 };

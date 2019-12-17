@@ -1,14 +1,6 @@
-import CLASS from './class';
-import {
-    isValue,
-    isFunction,
-    isString,
-    isEmpty,
-    getBBox
-} from './util';
-import {
-    AxisInternal
-} from './axis-internal';
+import CLASS from "./class";
+import {isValue, isFunction, isString, isEmpty, getBBox} from "./util";
+import {AxisInternal} from "./axis-internal";
 
 export default class Axis {
     constructor(owner) {
@@ -21,31 +13,37 @@ Axis.prototype.init = function init() {
     var $$ = this.owner,
         config = $$.config,
         main = $$.main;
-    $$.axes.x = main.append("g")
-        .attr("class", CLASS.axis + ' ' + CLASS.axisX)
+    $$.axes.x = main
+        .append("g")
+        .attr("class", CLASS.axis + " " + CLASS.axisX)
         .attr("clip-path", config.axis_x_inner ? "" : $$.clipPathForXAxis)
-        .attr("transform", $$.getTranslate('x'))
-        .style("visibility", config.axis_x_show ? 'visible' : 'hidden');
-    $$.axes.x.append("text")
+        .attr("transform", $$.getTranslate("x"))
+        .style("visibility", config.axis_x_show ? "visible" : "hidden");
+    $$.axes.x
+        .append("text")
         .attr("class", CLASS.axisXLabel)
         .attr("transform", config.axis_rotated ? "rotate(-90)" : "")
         .style("text-anchor", this.textAnchorForXAxisLabel.bind(this));
-    $$.axes.y = main.append("g")
-        .attr("class", CLASS.axis + ' ' + CLASS.axisY)
+    $$.axes.y = main
+        .append("g")
+        .attr("class", CLASS.axis + " " + CLASS.axisY)
         .attr("clip-path", config.axis_y_inner ? "" : $$.clipPathForYAxis)
-        .attr("transform", $$.getTranslate('y'))
-        .style("visibility", config.axis_y_show ? 'visible' : 'hidden');
-    $$.axes.y.append("text")
+        .attr("transform", $$.getTranslate("y"))
+        .style("visibility", config.axis_y_show ? "visible" : "hidden");
+    $$.axes.y
+        .append("text")
         .attr("class", CLASS.axisYLabel)
         .attr("transform", config.axis_rotated ? "" : "rotate(-90)")
         .style("text-anchor", this.textAnchorForYAxisLabel.bind(this));
 
-    $$.axes.y2 = main.append("g")
-        .attr("class", CLASS.axis + ' ' + CLASS.axisY2)
+    $$.axes.y2 = main
+        .append("g")
+        .attr("class", CLASS.axis + " " + CLASS.axisY2)
         // clip-path?
-        .attr("transform", $$.getTranslate('y2'))
-        .style("visibility", config.axis_y2_show ? 'visible' : 'hidden');
-    $$.axes.y2.append("text")
+        .attr("transform", $$.getTranslate("y2"))
+        .style("visibility", config.axis_y2_show ? "visible" : "hidden");
+    $$.axes.y2
+        .append("text")
         .attr("class", CLASS.axisY2Label)
         .attr("transform", config.axis_rotated ? "" : "rotate(-90)")
         .style("text-anchor", this.textAnchorForY2AxisLabel.bind(this));
@@ -60,12 +58,12 @@ Axis.prototype.getXAxis = function getXAxis(scale, orient, tickFormat, tickValue
             tickMultilineMax: config.axis_x_tick_multiline ? Number(config.axis_x_tick_multilineMax) : 0,
             tickWidth: config.axis_x_tick_width,
             tickTextRotate: withoutRotateTickText ? 0 : config.axis_x_tick_rotate,
-            withoutTransition: withoutTransition,
+            withoutTransition: withoutTransition
         },
         axis = new this.internal(this, axisParams).axis.scale(scale).orient(orient);
 
     if ($$.isTimeSeries() && tickValues && typeof tickValues !== "function") {
-        tickValues = tickValues.map(function (v) {
+        tickValues = tickValues.map(function(v) {
             return $$.parseDate(v);
         });
     }
@@ -102,16 +100,16 @@ Axis.prototype.getYAxis = function getYAxis(axisId, scale, orient, tickValues, w
 
     let tickFormat = config[`axis_${axisId}_tick_format`];
     if (!tickFormat && $$.isAxisNormalized(axisId)) {
-        tickFormat = (x) => `${x}%`;
+        tickFormat = x => `${x}%`;
     }
 
     const axis = new this.internal(this, {
-            withOuterTick: withOuterTick,
-            withoutTransition: withoutTransition,
-            tickTextRotate: withoutRotateTickText ? 0 : config.axis_y_tick_rotate
-        }).axis
-            .scale(scale)
-            .orient(orient);
+        withOuterTick: withOuterTick,
+        withoutTransition: withoutTransition,
+        tickTextRotate: withoutRotateTickText ? 0 : config.axis_y_tick_rotate
+    }).axis
+        .scale(scale)
+        .orient(orient);
 
     if (tickFormat) {
         axis.tickFormat(tickFormat);
@@ -126,29 +124,35 @@ Axis.prototype.getYAxis = function getYAxis(axisId, scale, orient, tickValues, w
 };
 Axis.prototype.getId = function getId(id) {
     var config = this.owner.config;
-    return id in config.data_axes ? config.data_axes[id] : 'y';
+    return id in config.data_axes ? config.data_axes[id] : "y";
 };
 Axis.prototype.getXAxisTickFormat = function getXAxisTickFormat() {
     // #2251 previously set any negative values to a whole number,
     // however both should be truncated according to the users format specification
     var $$ = this.owner,
         config = $$.config;
-    let format = ($$.isTimeSeries()) ? $$.defaultAxisTimeFormat : ($$.isCategorized()) ? $$.categoryName : function (v) {
-        return v;
-    };
+    let format = $$.isTimeSeries()
+        ? $$.defaultAxisTimeFormat
+        : $$.isCategorized()
+        ? $$.categoryName
+        : function(v) {
+              return v;
+          };
 
     if (config.axis_x_tick_format) {
         if (isFunction(config.axis_x_tick_format)) {
             format = config.axis_x_tick_format;
         } else if ($$.isTimeSeries()) {
-            format = function (date) {
+            format = function(date) {
                 return date ? $$.axisTimeFormat(config.axis_x_tick_format)(date) : "";
             };
         }
     }
-    return isFunction(format) ? function (v) {
-        return format.call($$, v);
-    } : format;
+    return isFunction(format)
+        ? function(v) {
+              return format.call($$, v);
+          }
+        : format;
 };
 Axis.prototype.getTickValues = function getTickValues(tickValues, axis) {
     return tickValues ? tickValues : axis ? axis.tickValues() : undefined;
@@ -166,11 +170,11 @@ Axis.prototype.getLabelOptionByAxisId = function getLabelOptionByAxisId(axisId) 
     var $$ = this.owner,
         config = $$.config,
         option;
-    if (axisId === 'y') {
+    if (axisId === "y") {
         option = config.axis_y_label;
-    } else if (axisId === 'y2') {
+    } else if (axisId === "y2") {
         option = config.axis_y2_label;
-    } else if (axisId === 'x') {
+    } else if (axisId === "x") {
         option = config.axis_x_label;
     }
     return option;
@@ -184,11 +188,11 @@ Axis.prototype.setLabelText = function setLabelText(axisId, text) {
         config = $$.config,
         option = this.getLabelOptionByAxisId(axisId);
     if (isString(option)) {
-        if (axisId === 'y') {
+        if (axisId === "y") {
             config.axis_y_label = text;
-        } else if (axisId === 'y2') {
+        } else if (axisId === "y2") {
             config.axis_y2_label = text;
-        } else if (axisId === 'x') {
+        } else if (axisId === "x") {
             config.axis_x_label = text;
         }
     } else if (option) {
@@ -197,38 +201,38 @@ Axis.prototype.setLabelText = function setLabelText(axisId, text) {
 };
 Axis.prototype.getLabelPosition = function getLabelPosition(axisId, defaultPosition) {
     var option = this.getLabelOptionByAxisId(axisId),
-        position = (option && typeof option === 'object' && option.position) ? option.position : defaultPosition;
+        position = option && typeof option === "object" && option.position ? option.position : defaultPosition;
     return {
-        isInner: position.indexOf('inner') >= 0,
-        isOuter: position.indexOf('outer') >= 0,
-        isLeft: position.indexOf('left') >= 0,
-        isCenter: position.indexOf('center') >= 0,
-        isRight: position.indexOf('right') >= 0,
-        isTop: position.indexOf('top') >= 0,
-        isMiddle: position.indexOf('middle') >= 0,
-        isBottom: position.indexOf('bottom') >= 0
+        isInner: position.indexOf("inner") >= 0,
+        isOuter: position.indexOf("outer") >= 0,
+        isLeft: position.indexOf("left") >= 0,
+        isCenter: position.indexOf("center") >= 0,
+        isRight: position.indexOf("right") >= 0,
+        isTop: position.indexOf("top") >= 0,
+        isMiddle: position.indexOf("middle") >= 0,
+        isBottom: position.indexOf("bottom") >= 0
     };
 };
 Axis.prototype.getXAxisLabelPosition = function getXAxisLabelPosition() {
-    return this.getLabelPosition('x', this.owner.config.axis_rotated ? 'inner-top' : 'inner-right');
+    return this.getLabelPosition("x", this.owner.config.axis_rotated ? "inner-top" : "inner-right");
 };
 Axis.prototype.getYAxisLabelPosition = function getYAxisLabelPosition() {
-    return this.getLabelPosition('y', this.owner.config.axis_rotated ? 'inner-right' : 'inner-top');
+    return this.getLabelPosition("y", this.owner.config.axis_rotated ? "inner-right" : "inner-top");
 };
 Axis.prototype.getY2AxisLabelPosition = function getY2AxisLabelPosition() {
-    return this.getLabelPosition('y2', this.owner.config.axis_rotated ? 'inner-right' : 'inner-top');
+    return this.getLabelPosition("y2", this.owner.config.axis_rotated ? "inner-right" : "inner-top");
 };
 Axis.prototype.getLabelPositionById = function getLabelPositionById(id) {
-    return id === 'y2' ? this.getY2AxisLabelPosition() : id === 'y' ? this.getYAxisLabelPosition() : this.getXAxisLabelPosition();
+    return id === "y2" ? this.getY2AxisLabelPosition() : id === "y" ? this.getYAxisLabelPosition() : this.getXAxisLabelPosition();
 };
 Axis.prototype.textForXAxisLabel = function textForXAxisLabel() {
-    return this.getLabelText('x');
+    return this.getLabelText("x");
 };
 Axis.prototype.textForYAxisLabel = function textForYAxisLabel() {
-    return this.getLabelText('y');
+    return this.getLabelText("y");
 };
 Axis.prototype.textForY2AxisLabel = function textForY2AxisLabel() {
-    return this.getLabelText('y2');
+    return this.getLabelText("y2");
 };
 Axis.prototype.xForAxisLabel = function xForAxisLabel(forHorizontal, position) {
     var $$ = this.owner;
@@ -247,9 +251,9 @@ Axis.prototype.dxForAxisLabel = function dxForAxisLabel(forHorizontal, position)
 };
 Axis.prototype.textAnchorForAxisLabel = function textAnchorForAxisLabel(forHorizontal, position) {
     if (forHorizontal) {
-        return position.isLeft ? 'start' : position.isCenter ? 'middle' : 'end';
+        return position.isLeft ? "start" : position.isCenter ? "middle" : "end";
     } else {
-        return position.isBottom ? 'start' : position.isMiddle ? 'middle' : 'end';
+        return position.isBottom ? "start" : position.isMiddle ? "middle" : "end";
     }
 };
 Axis.prototype.xForXAxisLabel = function xForXAxisLabel() {
@@ -275,9 +279,9 @@ Axis.prototype.dyForXAxisLabel = function dyForXAxisLabel() {
         config = $$.config,
         position = this.getXAxisLabelPosition();
     if (config.axis_rotated) {
-        return position.isInner ? "1.2em" : -25 - ($$.config.axis_x_inner ? 0 : this.getMaxTickWidth('x'));
+        return position.isInner ? "1.2em" : -25 - ($$.config.axis_x_inner ? 0 : this.getMaxTickWidth("x"));
     } else {
-        return position.isInner ? "-0.5em" : $$.getHorizontalAxisHeight('x') - 10;
+        return position.isInner ? "-0.5em" : $$.getHorizontalAxisHeight("x") - 10;
     }
 };
 Axis.prototype.dyForYAxisLabel = function dyForYAxisLabel() {
@@ -286,7 +290,7 @@ Axis.prototype.dyForYAxisLabel = function dyForYAxisLabel() {
     if ($$.config.axis_rotated) {
         return position.isInner ? "-0.5em" : "3em";
     } else {
-        return position.isInner ? "1.2em" : -10 - ($$.config.axis_y_inner ? 0 : (this.getMaxTickWidth('y') + 10));
+        return position.isInner ? "1.2em" : -10 - ($$.config.axis_y_inner ? 0 : this.getMaxTickWidth("y") + 10);
     }
 };
 Axis.prototype.dyForY2AxisLabel = function dyForY2AxisLabel() {
@@ -295,7 +299,7 @@ Axis.prototype.dyForY2AxisLabel = function dyForY2AxisLabel() {
     if ($$.config.axis_rotated) {
         return position.isInner ? "1.2em" : "-2.2em";
     } else {
-        return position.isInner ? "-0.5em" : 15 + ($$.config.axis_y2_inner ? 0 : (this.getMaxTickWidth('y2') + 15));
+        return position.isInner ? "-0.5em" : 15 + ($$.config.axis_y2_inner ? 0 : this.getMaxTickWidth("y2") + 15);
     }
 };
 Axis.prototype.textAnchorForXAxisLabel = function textAnchorForXAxisLabel() {
@@ -313,34 +317,52 @@ Axis.prototype.textAnchorForY2AxisLabel = function textAnchorForY2AxisLabel() {
 Axis.prototype.getMaxTickWidth = function getMaxTickWidth(id, withoutRecompute) {
     var $$ = this.owner,
         maxWidth = 0,
-        targetsToShow, scale, axis, dummy, svg;
+        targetsToShow,
+        scale,
+        axis,
+        dummy,
+        svg;
     if (withoutRecompute && $$.currentMaxTickWidths[id]) {
         return $$.currentMaxTickWidths[id];
     }
     if ($$.svg) {
         targetsToShow = $$.filterTargetsToShow($$.data.targets);
-        if (id === 'y') {
-            scale = $$.y.copy().domain($$.getYDomain(targetsToShow, 'y'));
+        if (id === "y") {
+            scale = $$.y.copy().domain($$.getYDomain(targetsToShow, "y"));
             axis = this.getYAxis(id, scale, $$.yOrient, $$.yAxisTickValues, false, true, true);
-        } else if (id === 'y2') {
-            scale = $$.y2.copy().domain($$.getYDomain(targetsToShow, 'y2'));
+        } else if (id === "y2") {
+            scale = $$.y2.copy().domain($$.getYDomain(targetsToShow, "y2"));
             axis = this.getYAxis(id, scale, $$.y2Orient, $$.y2AxisTickValues, false, true, true);
         } else {
             scale = $$.x.copy().domain($$.getXDomain(targetsToShow));
             axis = this.getXAxis(scale, $$.xOrient, $$.xAxisTickFormat, $$.xAxisTickValues, false, true, true);
             this.updateXAxisTickValues(targetsToShow, axis);
         }
-        dummy = $$.d3.select('body').append('div').classed('c3', true);
-        svg = dummy.append("svg").style('visibility', 'hidden').style('position', 'fixed').style('top', 0).style('left', 0),
-            svg.append('g').call(axis).each(function () {
-                $$.d3.select(this).selectAll('text').each(function () {
-                    var box = getBBox(this);
-                    if (maxWidth < box.width) {
-                        maxWidth = box.width;
-                    }
+        dummy = $$.d3
+            .select("body")
+            .append("div")
+            .classed("c3", true);
+        (svg = dummy
+            .append("svg")
+            .style("visibility", "hidden")
+            .style("position", "fixed")
+            .style("top", 0)
+            .style("left", 0)),
+            svg
+                .append("g")
+                .call(axis)
+                .each(function() {
+                    $$.d3
+                        .select(this)
+                        .selectAll("text")
+                        .each(function() {
+                            var box = getBBox(this);
+                            if (maxWidth < box.width) {
+                                maxWidth = box.width;
+                            }
+                        });
+                    dummy.remove();
                 });
-                dummy.remove();
-            });
     }
     $$.currentMaxTickWidths[id] = maxWidth <= 0 ? $$.currentMaxTickWidths[id] : maxWidth;
     return $$.currentMaxTickWidths[id];
@@ -348,31 +370,31 @@ Axis.prototype.getMaxTickWidth = function getMaxTickWidth(id, withoutRecompute) 
 
 Axis.prototype.updateLabels = function updateLabels(withTransition) {
     var $$ = this.owner;
-    var axisXLabel = $$.main.select('.' + CLASS.axisX + ' .' + CLASS.axisXLabel),
-        axisYLabel = $$.main.select('.' + CLASS.axisY + ' .' + CLASS.axisYLabel),
-        axisY2Label = $$.main.select('.' + CLASS.axisY2 + ' .' + CLASS.axisY2Label);
+    var axisXLabel = $$.main.select("." + CLASS.axisX + " ." + CLASS.axisXLabel),
+        axisYLabel = $$.main.select("." + CLASS.axisY + " ." + CLASS.axisYLabel),
+        axisY2Label = $$.main.select("." + CLASS.axisY2 + " ." + CLASS.axisY2Label);
     (withTransition ? axisXLabel.transition() : axisXLabel)
-    .attr("x", this.xForXAxisLabel.bind(this))
+        .attr("x", this.xForXAxisLabel.bind(this))
         .attr("dx", this.dxForXAxisLabel.bind(this))
         .attr("dy", this.dyForXAxisLabel.bind(this))
         .text(this.textForXAxisLabel.bind(this));
     (withTransition ? axisYLabel.transition() : axisYLabel)
-    .attr("x", this.xForYAxisLabel.bind(this))
+        .attr("x", this.xForYAxisLabel.bind(this))
         .attr("dx", this.dxForYAxisLabel.bind(this))
         .attr("dy", this.dyForYAxisLabel.bind(this))
         .text(this.textForYAxisLabel.bind(this));
     (withTransition ? axisY2Label.transition() : axisY2Label)
-    .attr("x", this.xForY2AxisLabel.bind(this))
+        .attr("x", this.xForY2AxisLabel.bind(this))
         .attr("dx", this.dxForY2AxisLabel.bind(this))
         .attr("dy", this.dyForY2AxisLabel.bind(this))
         .text(this.textForY2AxisLabel.bind(this));
 };
 Axis.prototype.getPadding = function getPadding(padding, key, defaultValue, domainLength) {
-    var p = typeof padding === 'number' ? padding : padding[key];
+    var p = typeof padding === "number" ? padding : padding[key];
     if (!isValue(p)) {
         return defaultValue;
     }
-    if (padding.unit === 'ratio') {
+    if (padding.unit === "ratio") {
         return padding[key] * domainLength;
     }
     // assume padding is pixels if unit is not specified
@@ -385,7 +407,13 @@ Axis.prototype.convertPixelsToAxisPadding = function convertPixelsToAxisPadding(
 };
 Axis.prototype.generateTickValues = function generateTickValues(values, tickCount, forTimeSeries) {
     var tickValues = values,
-        targetCount, start, end, count, interval, i, tickValue;
+        targetCount,
+        start,
+        end,
+        count,
+        interval,
+        i,
+        tickValue;
     if (tickCount) {
         targetCount = isFunction(tickCount) ? tickCount() : tickCount;
         // compute ticks according to tickCount
@@ -408,7 +436,7 @@ Axis.prototype.generateTickValues = function generateTickValues(values, tickCoun
         }
     }
     if (!forTimeSeries) {
-        tickValues = tickValues.sort(function (a, b) {
+        tickValues = tickValues.sort(function(a, b) {
             return a - b;
         });
     }

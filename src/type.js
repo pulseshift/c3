@@ -1,88 +1,95 @@
-import { ChartInternal } from './core';
-import { isString } from './util';
+import {ChartInternal} from "./core";
+import {isString} from "./util";
 
-ChartInternal.prototype.setTargetType = function (targetIds, type) {
-    var $$ = this, config = $$.config;
-    $$.mapToTargetIds(targetIds).forEach(function (id) {
-        $$.withoutFadeIn[id] = (type === config.data_types[id]);
+ChartInternal.prototype.setTargetType = function(targetIds, type) {
+    var $$ = this,
+        config = $$.config;
+    $$.mapToTargetIds(targetIds).forEach(function(id) {
+        $$.withoutFadeIn[id] = type === config.data_types[id];
         config.data_types[id] = type;
     });
     if (!targetIds) {
         config.data_type = type;
     }
 };
-ChartInternal.prototype.hasType = function (type, targets) {
-    var $$ = this, types = $$.config.data_types, has = false;
+ChartInternal.prototype.hasType = function(type, targets) {
+    var $$ = this,
+        types = $$.config.data_types,
+        has = false;
     targets = targets || $$.data.targets;
     if (targets && targets.length) {
-        targets.forEach(function (target) {
+        targets.forEach(function(target) {
             var t = types[target.id];
-            if ((t && t.indexOf(type) >= 0) || (!t && type === 'line')) {
+            if ((t && t.indexOf(type) >= 0) || (!t && type === "line")) {
                 has = true;
             }
         });
     } else if (Object.keys(types).length) {
-        Object.keys(types).forEach(function (id) {
-            if (types[id] === type) { has = true; }
+        Object.keys(types).forEach(function(id) {
+            if (types[id] === type) {
+                has = true;
+            }
         });
     } else {
         has = $$.config.data_type === type;
     }
     return has;
 };
-ChartInternal.prototype.hasArcType = function (targets) {
-    return this.hasType('pie', targets) || this.hasType('donut', targets) || this.hasType('gauge', targets);
+ChartInternal.prototype.hasArcType = function(targets) {
+    return this.hasType("pie", targets) || this.hasType("donut", targets) || this.hasType("gauge", targets);
 };
-ChartInternal.prototype.isLineType = function (d) {
-    var config = this.config, id = isString(d) ? d : d.id;
-    return !config.data_types[id] || ['line', 'spline', 'area', 'area-spline', 'step', 'area-step', 'ribbon-step', 'ribbon-spline', 'ribbon-line'].indexOf(config.data_types[id]) >= 0;
+ChartInternal.prototype.isLineType = function(d) {
+    var config = this.config,
+        id = isString(d) ? d : d.id;
+    return !config.data_types[id] || ["line", "spline", "area", "area-spline", "step", "area-step", "ribbon-step", "ribbon-spline", "ribbon-line"].indexOf(config.data_types[id]) >= 0;
 };
-ChartInternal.prototype.isStepType = function (d) {
+ChartInternal.prototype.isStepType = function(d) {
     var id = isString(d) ? d : d.id;
-    return ['step', 'area-step', 'ribbon-step'].indexOf(this.config.data_types[id]) >= 0;
+    return ["step", "area-step", "ribbon-step"].indexOf(this.config.data_types[id]) >= 0;
 };
-ChartInternal.prototype.isSplineType = function (d) {
+ChartInternal.prototype.isSplineType = function(d) {
     var id = isString(d) ? d : d.id;
-    return ['spline', 'area-spline', 'ribbon-spline'].indexOf(this.config.data_types[id]) >= 0;
+    return ["spline", "area-spline", "ribbon-spline"].indexOf(this.config.data_types[id]) >= 0;
 };
-ChartInternal.prototype.isAreaType = function (d) {
+ChartInternal.prototype.isAreaType = function(d) {
     var id = isString(d) ? d : d.id;
-    return ['area', 'area-spline', 'area-step', 'ribbon-step', 'ribbon-spline', 'ribbon-line'].indexOf(this.config.data_types[id]) >= 0;
-}; c3_chart_internal_fn.isRibbonType = function (d) {
-    var id = isString(d) ? d : d.id;
-    return ['ribbon-step', 'ribbon-spline', 'ribbon-line'].indexOf(this.config.data_types[id]) >= 0;
+    return ["area", "area-spline", "area-step", "ribbon-step", "ribbon-spline", "ribbon-line"].indexOf(this.config.data_types[id]) >= 0;
 };
-ChartInternal.prototype.isBarType = function (d) {
+ChartInternal.prototype.isRibbonType = function(d) {
     var id = isString(d) ? d : d.id;
-    return this.config.data_types[id] === 'bar';
+    return ["ribbon-step", "ribbon-spline", "ribbon-line"].indexOf(this.config.data_types[id]) >= 0;
 };
-ChartInternal.prototype.isScatterType = function (d) {
+ChartInternal.prototype.isBarType = function(d) {
     var id = isString(d) ? d : d.id;
-    return this.config.data_types[id] === 'scatter';
+    return this.config.data_types[id] === "bar";
 };
-ChartInternal.prototype.isStanfordType = function (d) {
+ChartInternal.prototype.isScatterType = function(d) {
     var id = isString(d) ? d : d.id;
-    return this.config.data_types[id] === 'stanford';
+    return this.config.data_types[id] === "scatter";
 };
-ChartInternal.prototype.isPieType = function (d) {
+ChartInternal.prototype.isStanfordType = function(d) {
     var id = isString(d) ? d : d.id;
-    return this.config.data_types[id] === 'pie';
+    return this.config.data_types[id] === "stanford";
 };
-ChartInternal.prototype.isGaugeType = function (d) {
+ChartInternal.prototype.isPieType = function(d) {
     var id = isString(d) ? d : d.id;
-    return this.config.data_types[id] === 'gauge';
+    return this.config.data_types[id] === "pie";
 };
-ChartInternal.prototype.isDonutType = function (d) {
+ChartInternal.prototype.isGaugeType = function(d) {
     var id = isString(d) ? d : d.id;
-    return this.config.data_types[id] === 'donut';
+    return this.config.data_types[id] === "gauge";
 };
-ChartInternal.prototype.isArcType = function (d) {
+ChartInternal.prototype.isDonutType = function(d) {
+    var id = isString(d) ? d : d.id;
+    return this.config.data_types[id] === "donut";
+};
+ChartInternal.prototype.isArcType = function(d) {
     return this.isPieType(d) || this.isDonutType(d) || this.isGaugeType(d);
 };
-ChartInternal.prototype.lineData = function (d) {
+ChartInternal.prototype.lineData = function(d) {
     return this.isLineType(d) ? [d] : [];
 };
-ChartInternal.prototype.arcData = function (d) {
+ChartInternal.prototype.arcData = function(d) {
     return this.isArcType(d.data) ? [d] : [];
 };
 /* not used
@@ -90,12 +97,12 @@ ChartInternal.prototype.arcData = function (d) {
  return isScatterType(d) ? d.values : [];
  }
  */
-ChartInternal.prototype.barData = function (d) {
+ChartInternal.prototype.barData = function(d) {
     return this.isBarType(d) ? d.values : [];
 };
-ChartInternal.prototype.lineOrScatterOrStanfordData = function (d) {
+ChartInternal.prototype.lineOrScatterOrStanfordData = function(d) {
     return this.isLineType(d) || this.isScatterType(d) || this.isStanfordType(d) ? d.values : [];
 };
-ChartInternal.prototype.barOrLineData = function (d) {
+ChartInternal.prototype.barOrLineData = function(d) {
     return this.isBarType(d) || this.isLineType(d) ? d.values : [];
 };

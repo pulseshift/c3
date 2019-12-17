@@ -1,29 +1,38 @@
-import CLASS from './class';
-import { Chart, ChartInternal } from './core';
-import { isValue, isDefined, diffDomain } from './util';
+import CLASS from "./class";
+import {Chart, ChartInternal} from "./core";
+import {isValue, isDefined, diffDomain} from "./util";
 
-Chart.prototype.flow = function (args) {
+Chart.prototype.flow = function(args) {
     var $$ = this.internal,
-        targets, data, notfoundIds = [], orgDataCount = $$.getMaxDataCount(),
-        dataCount, domain, baseTarget, baseValue, length = 0, tail = 0, diff, to;
+        targets,
+        data,
+        notfoundIds = [],
+        orgDataCount = $$.getMaxDataCount(),
+        dataCount,
+        domain,
+        baseTarget,
+        baseValue,
+        length = 0,
+        tail = 0,
+        diff,
+        to;
 
     if (args.json) {
         data = $$.convertJsonToData(args.json, args.keys);
-    }
-    else if (args.rows) {
+    } else if (args.rows) {
         data = $$.convertRowsToData(args.rows);
-    }
-    else if (args.columns) {
+    } else if (args.columns) {
         data = $$.convertColumnsToData(args.columns);
-    }
-    else {
+    } else {
         return;
     }
     targets = $$.convertDataToTargets(data, true);
 
     // Update/Add data
-    $$.data.targets.forEach(function (t) {
-        var found = false, i, j;
+    $$.data.targets.forEach(function(t) {
+        var found = false,
+            i,
+            j;
         for (i = 0; i < targets.length; i++) {
             if (t.id === targets[i].id) {
                 found = true;
@@ -45,11 +54,13 @@ Chart.prototype.flow = function (args) {
                 break;
             }
         }
-        if (!found) { notfoundIds.push(t.id); }
+        if (!found) {
+            notfoundIds.push(t.id);
+        }
     });
 
     // Append null for not found targets
-    $$.data.targets.forEach(function (t) {
+    $$.data.targets.forEach(function(t) {
         var i, j;
         for (i = 0; i < notfoundIds.length; i++) {
             if (t.id === notfoundIds[i]) {
@@ -68,8 +79,9 @@ Chart.prototype.flow = function (args) {
 
     // Generate null values for new target
     if ($$.data.targets.length) {
-        targets.forEach(function (t) {
-            var i, missing = [];
+        targets.forEach(function(t) {
+            var i,
+                missing = [];
             for (i = $$.data.targets[0].values[0].index; i < tail; i++) {
                 missing.push({
                     id: t.id,
@@ -78,7 +90,7 @@ Chart.prototype.flow = function (args) {
                     value: null
                 });
             }
-            t.values.forEach(function (v) {
+            t.values.forEach(function(v) {
                 v.index += tail;
                 if (!$$.isTimeSeries()) {
                     v.x += tail;
@@ -98,8 +110,10 @@ Chart.prototype.flow = function (args) {
     if (isDefined(args.to)) {
         length = 0;
         to = $$.isTimeSeries() ? $$.parseDate(args.to) : args.to;
-        baseTarget.values.forEach(function (v) {
-            if (v.x < to) { length++; }
+        baseTarget.values.forEach(function(v) {
+            if (v.x < to) {
+                length++;
+            }
         });
     } else if (isDefined(args.length)) {
         length = args.length;
@@ -136,19 +150,21 @@ Chart.prototype.flow = function (args) {
             length: length,
             duration: isValue(args.duration) ? args.duration : $$.config.transition_duration,
             done: args.done,
-            orgDataCount: orgDataCount,
+            orgDataCount: orgDataCount
         },
         withLegend: true,
         withTransition: orgDataCount > 1,
         withTrimXDomain: false,
-        withUpdateXAxis: true,
+        withUpdateXAxis: true
     });
 };
 
-ChartInternal.prototype.generateFlow = function (args) {
-    var $$ = this, config = $$.config, d3 = $$.d3;
+ChartInternal.prototype.generateFlow = function(args) {
+    var $$ = this,
+        config = $$.config,
+        d3 = $$.d3;
 
-    return function () {
+    return function() {
         var targets = args.targets,
             flow = args.flow,
             drawBar = args.drawBar,
@@ -161,37 +177,35 @@ ChartInternal.prototype.generateFlow = function (args) {
             yForText = args.yForText,
             duration = args.duration;
 
-        var translateX, scaleX = 1, transform,
+        var translateX,
+            scaleX = 1,
+            transform,
             flowIndex = flow.index,
             flowLength = flow.length,
             flowStart = $$.getValueOnIndex($$.data.targets[0].values, flowIndex),
             flowEnd = $$.getValueOnIndex($$.data.targets[0].values, flowIndex + flowLength),
-            orgDomain = $$.x.domain(), domain,
+            orgDomain = $$.x.domain(),
+            domain,
             durationForFlow = flow.duration || duration,
-            done = flow.done || function () {},
+            done = flow.done || function() {},
             wait = $$.generateWait();
 
-        var xgrid,
-            xgridLines,
-            mainRegion,
-            mainText,
-            mainBar,
-            mainLine,
-            mainArea,
-            mainCircle;
+        var xgrid, xgridLines, mainRegion, mainText, mainBar, mainLine, mainArea, mainCircle;
 
         // set flag
         $$.flowing = true;
 
         // remove head data after rendered
-        $$.data.targets.forEach(function (d) {
+        $$.data.targets.forEach(function(d) {
             d.values.splice(0, flowLength);
         });
 
         // update x domain to generate axis elements for flow
         domain = $$.updateXDomain(targets, true, true);
         // update elements related to x scale
-        if ($$.updateXGrid) { $$.updateXGrid(true); }
+        if ($$.updateXGrid) {
+            $$.updateXGrid(true);
+        }
 
         xgrid = $$.xgrid || d3.selectAll([]); // xgrid needs to be obtained after updateXGrid
         xgridLines = $$.xgridLines || d3.selectAll([]);
@@ -203,7 +217,8 @@ ChartInternal.prototype.generateFlow = function (args) {
         mainCircle = $$.mainCircle || d3.selectAll([]);
 
         // generate transform to flow
-        if (!flow.orgDataCount) { // if empty
+        if (!flow.orgDataCount) {
+            // if empty
             if ($$.data.targets[0].values.length !== 1) {
                 translateX = $$.x(orgDomain[0]) - $$.x(domain[0]);
             } else {
@@ -219,77 +234,88 @@ ChartInternal.prototype.generateFlow = function (args) {
             translateX = $$.x(orgDomain[0]) - $$.x(domain[0]);
         } else {
             if ($$.isTimeSeries()) {
-                translateX = ($$.x(orgDomain[0]) - $$.x(domain[0]));
+                translateX = $$.x(orgDomain[0]) - $$.x(domain[0]);
             } else {
-                translateX = ($$.x(flowStart.x) - $$.x(flowEnd.x));
+                translateX = $$.x(flowStart.x) - $$.x(flowEnd.x);
             }
         }
-        scaleX = (diffDomain(orgDomain) / diffDomain(domain));
-        transform = 'translate(' + translateX + ',0) scale(' + scaleX + ',1)';
+        scaleX = diffDomain(orgDomain) / diffDomain(domain);
+        transform = "translate(" + translateX + ",0) scale(" + scaleX + ",1)";
 
         $$.hideXGridFocus();
 
-        var flowTransition = d3.transition().ease(d3.easeLinear).duration(durationForFlow);
+        var flowTransition = d3
+            .transition()
+            .ease(d3.easeLinear)
+            .duration(durationForFlow);
         wait.add($$.xAxis($$.axes.x, flowTransition));
-        wait.add(mainBar.transition(flowTransition).attr('transform', transform));
-        wait.add(mainLine.transition(flowTransition).attr('transform', transform));
-        wait.add(mainArea.transition(flowTransition).attr('transform', transform));
-        wait.add(mainCircle.transition(flowTransition).attr('transform', transform));
-        wait.add(mainText.transition(flowTransition).attr('transform', transform));
-        wait.add(mainRegion.filter($$.isRegionOnX).transition(flowTransition).attr('transform', transform));
-        wait.add(xgrid.transition(flowTransition).attr('transform', transform));
-        wait.add(xgridLines.transition(flowTransition).attr('transform', transform));
-        wait(function () {
-            var i, shapes = [], texts = [];
+        wait.add(mainBar.transition(flowTransition).attr("transform", transform));
+        wait.add(mainLine.transition(flowTransition).attr("transform", transform));
+        wait.add(mainArea.transition(flowTransition).attr("transform", transform));
+        wait.add(mainCircle.transition(flowTransition).attr("transform", transform));
+        wait.add(mainText.transition(flowTransition).attr("transform", transform));
+        wait.add(
+            mainRegion
+                .filter($$.isRegionOnX)
+                .transition(flowTransition)
+                .attr("transform", transform)
+        );
+        wait.add(xgrid.transition(flowTransition).attr("transform", transform));
+        wait.add(xgridLines.transition(flowTransition).attr("transform", transform));
+        wait(function() {
+            var i,
+                shapes = [],
+                texts = [];
 
             // remove flowed elements
             if (flowLength) {
                 for (i = 0; i < flowLength; i++) {
-                    shapes.push('.' + CLASS.shape + '-' + (flowIndex + i));
-                    texts.push('.' + CLASS.text + '-' + (flowIndex + i));
+                    shapes.push("." + CLASS.shape + "-" + (flowIndex + i));
+                    texts.push("." + CLASS.text + "-" + (flowIndex + i));
                 }
-                $$.svg.selectAll('.' + CLASS.shapes).selectAll(shapes).remove();
-                $$.svg.selectAll('.' + CLASS.texts).selectAll(texts).remove();
-                $$.svg.select('.' + CLASS.xgrid).remove();
+                $$.svg
+                    .selectAll("." + CLASS.shapes)
+                    .selectAll(shapes)
+                    .remove();
+                $$.svg
+                    .selectAll("." + CLASS.texts)
+                    .selectAll(texts)
+                    .remove();
+                $$.svg.select("." + CLASS.xgrid).remove();
             }
 
             // draw again for removing flowed elements and reverting attr
             xgrid
-                .attr('transform', null)
-                .attr('x1', $$.xgridAttr.x1)
-                .attr('x2', $$.xgridAttr.x2)
-                .attr('y1', $$.xgridAttr.y1)
-                .attr('y2', $$.xgridAttr.y2)
+                .attr("transform", null)
+                .attr("x1", $$.xgridAttr.x1)
+                .attr("x2", $$.xgridAttr.x2)
+                .attr("y1", $$.xgridAttr.y1)
+                .attr("y2", $$.xgridAttr.y2)
                 .style("opacity", $$.xgridAttr.opacity);
+            xgridLines.attr("transform", null);
             xgridLines
-                .attr('transform', null);
-            xgridLines.select('line')
+                .select("line")
                 .attr("x1", config.axis_rotated ? 0 : xv)
                 .attr("x2", config.axis_rotated ? $$.width : xv);
-            xgridLines.select('text')
+            xgridLines
+                .select("text")
                 .attr("x", config.axis_rotated ? $$.width : 0)
                 .attr("y", xv);
-            mainBar
-                .attr('transform', null)
-                .attr("d", drawBar);
-            mainLine
-                .attr('transform', null)
-                .attr("d", drawLine);
-            mainArea
-                .attr('transform', null)
-                .attr("d", drawArea);
+            mainBar.attr("transform", null).attr("d", drawBar);
+            mainLine.attr("transform", null).attr("d", drawLine);
+            mainArea.attr("transform", null).attr("d", drawArea);
             mainCircle
-                .attr('transform', null)
+                .attr("transform", null)
                 .attr("cx", cx)
                 .attr("cy", cy);
             mainText
-                .attr('transform', null)
-                .attr('x', xForText)
-                .attr('y', yForText)
-                .style('fill-opacity', $$.opacityForText.bind($$));
+                .attr("transform", null)
+                .attr("x", xForText)
+                .attr("y", yForText)
+                .style("fill-opacity", $$.opacityForText.bind($$));
+            mainRegion.attr("transform", null);
             mainRegion
-                .attr('transform', null);
-            mainRegion.filter($$.isRegionOnX)
+                .filter($$.isRegionOnX)
                 .attr("x", $$.regionX.bind($$))
                 .attr("width", $$.regionWidth.bind($$));
 

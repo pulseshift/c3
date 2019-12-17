@@ -1,12 +1,12 @@
-import { Chart, ChartInternal } from './core';
+import {Chart, ChartInternal} from "./core";
 
-Chart.prototype.transform = function (type, targetIds) {
+Chart.prototype.transform = function(type, targetIds) {
     var $$ = this.internal,
-        options = ['pie', 'donut'].indexOf(type) >= 0 ? {withTransform: true} : null;
+        options = ["pie", "donut"].indexOf(type) >= 0 ? {withTransform: true} : null;
     $$.transformTo(targetIds, type, options);
 };
 
-ChartInternal.prototype.transformTo = function (targetIds, type, optionsForRedraw) {
+ChartInternal.prototype.transformTo = function(targetIds, type, optionsForRedraw) {
     var $$ = this,
         withTransitionForAxis = !$$.hasArcType(),
         options = optionsForRedraw || {withTransitionForAxis: withTransitionForAxis};

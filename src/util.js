@@ -15,26 +15,28 @@ export var getPathBox = function(path) {
         items = [path.pathSegList.getItem(0), path.pathSegList.getItem(1)],
         minX = items[0].x,
         minY = Math.min(items[0].y, items[1].y);
-    return { x: minX, y: minY, width: box.width, height: box.height };
+    return {x: minX, y: minY, width: box.width, height: box.height};
 };
 export var getBBox = function(element) {
-  try {
-      return element.getBBox();
-  } catch (ignore) {
-      // Firefox will throw an exception if getBBox() is called whereas the
-      // element is rendered with display:none
-      // See https://github.com/c3js/c3/issues/2692
+    try {
+        return element.getBBox();
+    } catch (ignore) {
+        // Firefox will throw an exception if getBBox() is called whereas the
+        // element is rendered with display:none
+        // See https://github.com/c3js/c3/issues/2692
 
-      // The previous code was using `getBoundingClientRect` which was returning
-      // everything at 0 in this case so let's reproduce this behavior here.
+        // The previous code was using `getBoundingClientRect` which was returning
+        // everything at 0 in this case so let's reproduce this behavior here.
 
-      return { x: 0, y: 0, width: 0, height: 0 };
-  }
+        return {x: 0, y: 0, width: 0, height: 0};
+    }
 };
 export var hasValue = function(dict, value) {
     var found = false;
     Object.keys(dict).forEach(function(key) {
-        if (dict[key] === value) { found = true; }
+        if (dict[key] === value) {
+            found = true;
+        }
     });
     return found;
 };
@@ -42,22 +44,22 @@ export var isArray = function(o) {
     return Array.isArray(o);
 };
 export var isDefined = function(v) {
-    return typeof v !== 'undefined';
+    return typeof v !== "undefined";
 };
 export var isEmpty = function(o) {
-    return typeof o === 'undefined' || o === null || (isString(o) && o.length === 0) || (typeof o === 'object' && Object.keys(o).length === 0);
+    return typeof o === "undefined" || o === null || (isString(o) && o.length === 0) || (typeof o === "object" && Object.keys(o).length === 0);
 };
 export var isFunction = function(o) {
-    return typeof o === 'function';
+    return typeof o === "function";
 };
 export var isNumber = function(o) {
-    return typeof o === 'number';
+    return typeof o === "number";
 };
 export var isString = function(o) {
-    return typeof o === 'string';
+    return typeof o === "string";
 };
 export var isUndefined = function(v) {
-    return typeof v === 'undefined';
+    return typeof v === "undefined";
 };
 export var isValue = function(v) {
     return v || v === 0;
@@ -66,7 +68,7 @@ export var notEmpty = function(o) {
     return !isEmpty(o);
 };
 export var sanitise = function(str) {
-    return typeof str === 'string' ? str.replace(/</g, '&lt;').replace(/>/g, '&gt;') : str;
+    return typeof str === "string" ? str.replace(/</g, "&lt;").replace(/>/g, "&gt;") : str;
 };
 export var flattenArray = function(arr) {
     return Array.isArray(arr) ? [].concat(...arr) : [];
@@ -86,4 +88,3 @@ export var isWithinBox = function(point, box, sensitivity = 0) {
 
     return xStart < point[0] && point[0] < xEnd && yEnd < point[1] && point[1] < yStart;
 };
-

@@ -1,6 +1,6 @@
-import { Chart } from './core';
+import {Chart} from "./core";
 
-Chart.prototype.x = function (x) {
+Chart.prototype.x = function(x) {
     var $$ = this.internal;
     if (arguments.length) {
         $$.updateTargetX($$.data.targets, x);
@@ -8,7 +8,7 @@ Chart.prototype.x = function (x) {
     }
     return $$.data.xs;
 };
-Chart.prototype.xs = function (xs) {
+Chart.prototype.xs = function(xs) {
     var $$ = this.internal;
     if (arguments.length) {
         $$.updateTargetXs($$.data.targets, xs);

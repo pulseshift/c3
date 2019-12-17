@@ -1,9 +1,9 @@
-import { ChartInternal } from './core';
-import { isDefined } from './util';
+import {ChartInternal} from "./core";
+import {isDefined} from "./util";
 
-ChartInternal.prototype.getDefaultConfig = function () {
+ChartInternal.prototype.getDefaultConfig = function() {
     var config = {
-        bindto: '#chart',
+        bindto: "#chart",
         svg_classname: undefined,
         size_width: undefined,
         size_height: undefined,
@@ -14,31 +14,33 @@ ChartInternal.prototype.getDefaultConfig = function () {
         resize_auto: true,
         zoom_enabled: false,
         zoom_initialRange: undefined,
-        zoom_type: 'scroll',
+        zoom_type: "scroll",
         zoom_disableDefaultBehavior: false,
         zoom_privileged: false,
         zoom_rescale: false,
-        zoom_onzoom: function () {},
-        zoom_onzoomstart: function () {},
-        zoom_onzoomend: function () {},
+        zoom_onzoom: function() {},
+        zoom_onzoomstart: function() {},
+        zoom_onzoomend: function() {},
         zoom_x_min: undefined,
         zoom_x_max: undefined,
         interaction_brighten: true,
         interaction_enabled: true,
-        onmouseover: function () {},
-        onmouseout: function () {},
-        onresize: function () {},
-        onresized: function () {},
-        oninit: function () {},
-        onrendered: function () {},
+        onmouseover: function() {},
+        onmouseout: function() {},
+        onresize: function() {},
+        onresized: function() {},
+        oninit: function() {},
+        onrendered: function() {},
         transition_duration: 350,
-        data_epochs: 'epochs',
+        data_epochs: "epochs",
         data_x: undefined,
         data_xs: {},
-        data_xFormat: '%Y-%m-%d',
+        data_xFormat: "%Y-%m-%d",
         data_xLocaltime: true,
         data_xSort: true,
-        data_idConverter: function (id) { return id; },
+        data_idConverter: function(id) {
+            return id;
+        },
         data_names: {},
         data_classes: {},
         data_groups: [],
@@ -46,7 +48,7 @@ ChartInternal.prototype.getDefaultConfig = function () {
         data_type: undefined,
         data_types: {},
         data_labels: {},
-        data_order: 'desc',
+        data_order: "desc",
         data_regions: {},
         data_color: undefined,
         data_colors: {},
@@ -54,15 +56,17 @@ ChartInternal.prototype.getDefaultConfig = function () {
         data_filter: undefined,
         data_selection_enabled: false,
         data_selection_grouped: false,
-        data_selection_isselectable: function () { return true; },
+        data_selection_isselectable: function() {
+            return true;
+        },
         data_selection_multiple: true,
         data_selection_draggable: false,
         data_stack_normalize: false,
-        data_onclick: function () {},
-        data_onmouseover: function () {},
-        data_onmouseout: function () {},
-        data_onselected: function () {},
-        data_onunselected: function () {},
+        data_onclick: function() {},
+        data_onmouseover: function() {},
+        data_onmouseout: function() {},
+        data_onselected: function() {},
+        data_onunselected: function() {},
         data_url: undefined,
         data_headers: undefined,
         data_json: undefined,
@@ -76,15 +80,15 @@ ChartInternal.prototype.getDefaultConfig = function () {
         subchart_show: false,
         subchart_size_height: 60,
         subchart_axis_x_show: true,
-        subchart_onbrush: function () {},
+        subchart_onbrush: function() {},
         // color
         color_pattern: [],
         color_threshold: {},
         // legend
         legend_show: true,
         legend_hide: false,
-        legend_position: 'bottom',
-        legend_inset_anchor: 'top-left',
+        legend_position: "bottom",
+        legend_inset_anchor: "top-left",
         legend_inset_x: 10,
         legend_inset_y: 0,
         legend_inset_step: undefined,
@@ -98,7 +102,7 @@ ChartInternal.prototype.getDefaultConfig = function () {
         // axis
         axis_rotated: false,
         axis_x_show: true,
-        axis_x_type: 'indexed',
+        axis_x_type: "indexed",
         axis_x_localtime: true,
         axis_x_categories: [],
         axis_x_tick_centered: false,
@@ -121,7 +125,7 @@ ChartInternal.prototype.getDefaultConfig = function () {
         axis_x_label: {},
         axis_x_inner: undefined,
         axis_y_show: true,
-        axis_y_type: 'linear',
+        axis_y_type: "linear",
         axis_y_max: undefined,
         axis_y_min: undefined,
         axis_y_inverted: false,
@@ -138,7 +142,7 @@ ChartInternal.prototype.getDefaultConfig = function () {
         axis_y_padding: {},
         axis_y_default: undefined,
         axis_y2_show: false,
-        axis_y2_type: 'linear',
+        axis_y2_type: "linear",
         axis_y2_max: undefined,
         axis_y2_min: undefined,
         axis_y2_inverted: false,
@@ -153,7 +157,7 @@ ChartInternal.prototype.getDefaultConfig = function () {
         axis_y2_default: undefined,
         // grid
         grid_x_show: false,
-        grid_x_type: 'tick',
+        grid_x_type: "tick",
         grid_x_lines: [],
         grid_y_show: false,
         // not used
@@ -171,7 +175,7 @@ ChartInternal.prototype.getDefaultConfig = function () {
         point_select_r: undefined,
         // line
         line_connectNull: false,
-        line_step_type: 'step',
+        line_step_type: "step",
         // bar
         bar_width: undefined,
         bar_width_ratio: 0.6,
@@ -196,7 +200,7 @@ ChartInternal.prototype.getDefaultConfig = function () {
         gauge_label_format: undefined,
         gauge_min: 0,
         gauge_max: 100,
-        gauge_startingAngle: -1 * Math.PI/2,
+        gauge_startingAngle: (-1 * Math.PI) / 2,
         gauge_label_extents: undefined,
         gauge_units: undefined,
         gauge_width: undefined,
@@ -214,7 +218,7 @@ ChartInternal.prototype.getDefaultConfig = function () {
         donut_expand_duration: 50,
         donut_padAngle: 0,
         // spline
-        spline_interpolation_type: 'cardinal',
+        spline_interpolation_type: "cardinal",
         // stanford
         stanford_lines: [],
         stanford_regions: [],
@@ -242,14 +246,14 @@ ChartInternal.prototype.getDefaultConfig = function () {
         tooltip_format_value: undefined,
         tooltip_horizontal: undefined,
         tooltip_position: undefined,
-        tooltip_contents: function (d, defaultTitleFormat, defaultValueFormat, color) {
-            return this.getTooltipContent ? this.getTooltipContent(d, defaultTitleFormat, defaultValueFormat, color) : '';
+        tooltip_contents: function(d, defaultTitleFormat, defaultValueFormat, color) {
+            return this.getTooltipContent ? this.getTooltipContent(d, defaultTitleFormat, defaultValueFormat, color) : "";
         },
         tooltip_init_show: false,
         tooltip_init_x: 0,
-        tooltip_init_position: {top: '0px', left: '50px'},
-        tooltip_onshow: function () {},
-        tooltip_onhide: function () {},
+        tooltip_init_position: {top: "0px", left: "50px"},
+        tooltip_onshow: function() {},
+        tooltip_onhide: function() {},
         // title
         title_text: undefined,
         title_padding: {
@@ -258,10 +262,10 @@ ChartInternal.prototype.getDefaultConfig = function () {
             bottom: 0,
             left: 0
         },
-        title_position: 'top-center'
+        title_position: "top-center"
     };
 
-    Object.keys(this.additionalConfig).forEach(function (key) {
+    Object.keys(this.additionalConfig).forEach(function(key) {
         config[key] = this.additionalConfig[key];
     }, this);
 
@@ -269,27 +273,28 @@ ChartInternal.prototype.getDefaultConfig = function () {
 };
 ChartInternal.prototype.additionalConfig = {};
 
-ChartInternal.prototype.loadConfig = function (config) {
-    var this_config = this.config, target, keys, read;
+ChartInternal.prototype.loadConfig = function(config) {
+    var this_config = this.config,
+        target,
+        keys,
+        read;
     function find() {
         var key = keys.shift();
-//        console.log("key =>", key, ", target =>", target);
-        if (key && target && typeof target === 'object' && key in target) {
+        //        console.log("key =>", key, ", target =>", target);
+        if (key && target && typeof target === "object" && key in target) {
             target = target[key];
             return find();
-        }
-        else if (!key) {
+        } else if (!key) {
             return target;
-        }
-        else {
+        } else {
             return undefined;
         }
     }
-    Object.keys(this_config).forEach(function (key) {
+    Object.keys(this_config).forEach(function(key) {
         target = config;
-        keys = key.split('_');
+        keys = key.split("_");
         read = find();
-//        console.log("CONFIG : ", key, read);
+        //        console.log("CONFIG : ", key, read);
         if (isDefined(read)) {
             this_config[key] = read;
         }

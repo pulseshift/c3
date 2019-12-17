@@ -1,13 +1,13 @@
-import {ChartInternal} from './core';
+import {ChartInternal} from "./core";
 import {isFunction, sanitise} from "./util";
 
-ChartInternal.prototype.isStanfordGraphType = function () {
+ChartInternal.prototype.isStanfordGraphType = function() {
     var $$ = this;
 
-    return $$.config.data_type === 'stanford';
+    return $$.config.data_type === "stanford";
 };
 
-ChartInternal.prototype.initStanfordData = function () {
+ChartInternal.prototype.initStanfordData = function() {
     var $$ = this,
         d3 = $$.d3,
         config = $$.config,
@@ -31,14 +31,13 @@ ChartInternal.prototype.initStanfordData = function () {
 
     target.colors = isFunction(config.stanford_colors) ? config.stanford_colors : d3.interpolateHslLong(d3.hsl(250, 1, 0.5), d3.hsl(0, 1, 0.5));
 
-    target.colorscale = d3.scaleSequentialLog(target.colors)
-        .domain([minEpochs, maxEpochs]);
+    target.colorscale = d3.scaleSequentialLog(target.colors).domain([minEpochs, maxEpochs]);
 
     target.minEpochs = minEpochs;
     target.maxEpochs = maxEpochs;
 };
 
-ChartInternal.prototype.getStanfordPointColor = function (d) {
+ChartInternal.prototype.getStanfordPointColor = function(d) {
     var $$ = this,
         target = $$.data.targets[0];
 
@@ -46,7 +45,7 @@ ChartInternal.prototype.getStanfordPointColor = function (d) {
 };
 
 // http://jsfiddle.net/Xotic750/KtzLq/
-ChartInternal.prototype.getCentroid = function (points) {
+ChartInternal.prototype.getCentroid = function(points) {
     var area = getRegionArea(points);
 
     var x = 0,
@@ -73,10 +72,10 @@ ChartInternal.prototype.getCentroid = function (points) {
     };
 };
 
-ChartInternal.prototype.getStanfordTooltipTitle = function (d) {
+ChartInternal.prototype.getStanfordTooltipTitle = function(d) {
     var $$ = this,
-        labelX = $$.axis.getLabelText('x'),
-        labelY = $$.axis.getLabelText('y');
+        labelX = $$.axis.getLabelText("x"),
+        labelY = $$.axis.getLabelText("y");
 
     return `
       <tr><th>${labelX ? sanitise(labelX) : "x"}</th><th class='value'>${d.x}</th></tr>
@@ -84,15 +83,16 @@ ChartInternal.prototype.getStanfordTooltipTitle = function (d) {
     `;
 };
 
-ChartInternal.prototype.countEpochsInRegion = function (region) {
+ChartInternal.prototype.countEpochsInRegion = function(region) {
     var $$ = this,
         target = $$.data.targets[0],
-        total, count;
+        total,
+        count;
 
     total = target.values.reduce((accumulator, currentValue) => accumulator + Number(currentValue.epochs), 0);
 
     count = target.values.reduce((accumulator, currentValue) => {
-        if(pointInRegion(currentValue, region)) {
+        if (pointInRegion(currentValue, region)) {
             return accumulator + Number(currentValue.epochs);
         }
 
@@ -101,11 +101,12 @@ ChartInternal.prototype.countEpochsInRegion = function (region) {
 
     return {
         value: count,
-        percentage: count !== 0 ? (count / total * 100).toFixed(1) : 0
+        percentage: count !== 0 ? ((count / total) * 100).toFixed(1) : 0
     };
 };
 
-export var getRegionArea = function(points) { // thanks to: https://stackoverflow.com/questions/16282330/find-centerpoint-of-polygon-in-javascript
+export var getRegionArea = function(points) {
+    // thanks to: https://stackoverflow.com/questions/16282330/find-centerpoint-of-polygon-in-javascript
     var area = 0,
         i,
         j,
@@ -124,23 +125,27 @@ export var getRegionArea = function(points) { // thanks to: https://stackoverflo
     return area;
 };
 
-export var pointInRegion = function(point, region) { // thanks to: http://bl.ocks.org/bycoffe/5575904
+export var pointInRegion = function(point, region) {
+    // thanks to: http://bl.ocks.org/bycoffe/5575904
     // ray-casting algorithm based on
     // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
-    let xi, yi, yj, xj, intersect,
+    let xi,
+        yi,
+        yj,
+        xj,
+        intersect,
         x = point.x,
         y = point.value,
         inside = false;
 
     for (let i = 0, j = region.length - 1; i < region.length; j = i++) {
-
         xi = region[i].x;
         yi = region[i].y;
 
         xj = region[j].x;
         yj = region[j].y;
 
-        intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
 
         if (intersect) {
             inside = !inside;

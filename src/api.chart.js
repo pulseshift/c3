@@ -1,18 +1,23 @@
-import { Chart } from './core';
+import {Chart} from "./core";
 
-Chart.prototype.resize = function (size) {
-    var $$ = this.internal, config = $$.config;
+Chart.prototype.resize = function(size) {
+    var $$ = this.internal,
+        config = $$.config;
     config.size_width = size ? size.width : null;
     config.size_height = size ? size.height : null;
     this.flush();
 };
 
-Chart.prototype.flush = function () {
+Chart.prototype.flush = function() {
     var $$ = this.internal;
-    $$.updateAndRedraw({withLegend: true, withTransition: false, withTransitionForTransform: false});
+    $$.updateAndRedraw({
+        withLegend: true,
+        withTransition: false,
+        withTransitionForTransform: false
+    });
 };
 
-Chart.prototype.destroy = function () {
+Chart.prototype.destroy = function() {
     var $$ = this.internal;
 
     window.clearInterval($$.intervalForObserveInserted);
@@ -22,9 +27,9 @@ Chart.prototype.destroy = function () {
     }
 
     if (window.detachEvent) {
-        window.detachEvent('onresize', $$.resizeIfElementDisplayed);
+        window.detachEvent("onresize", $$.resizeIfElementDisplayed);
     } else if (window.removeEventListener) {
-        window.removeEventListener('resize', $$.resizeIfElementDisplayed);
+        window.removeEventListener("resize", $$.resizeIfElementDisplayed);
     } else {
         var wrapper = window.onresize;
         // check if no one else removed our wrapper and remove our resizeFunction from it
@@ -39,10 +44,10 @@ Chart.prototype.destroy = function () {
     // Unbinds from the window focus event
     $$.unbindWindowFocus();
 
-    $$.selectChart.classed('c3', false).html("");
+    $$.selectChart.classed("c3", false).html("");
 
     // MEMO: this is needed because the reference of some elements will not be released, then memory leak will happen.
-    Object.keys($$).forEach(function (key) {
+    Object.keys($$).forEach(function(key) {
         $$[key] = null;
     });
 

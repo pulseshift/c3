@@ -1,8 +1,8 @@
-import { Chart } from './core';
+import {Chart} from "./core";
 
 Chart.prototype.pie = function() {};
 
-Chart.prototype.pie.padAngle = function (padAngle) {
+Chart.prototype.pie.padAngle = function(padAngle) {
     if (padAngle === undefined) {
         return this.internal.config.pie_padAngle;
     }

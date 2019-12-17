@@ -1,13 +1,15 @@
-import { Chart } from './core';
-import { isArray } from './util';
+import {Chart} from "./core";
+import {isArray} from "./util";
 
-Chart.prototype.data = function (targetIds) {
+Chart.prototype.data = function(targetIds) {
     var targets = this.internal.data.targets;
-    return typeof targetIds === 'undefined' ? targets : targets.filter(function (t) {
-        return [].concat(targetIds).indexOf(t.id) >= 0;
-    });
+    return typeof targetIds === "undefined"
+        ? targets
+        : targets.filter(function(t) {
+              return [].concat(targetIds).indexOf(t.id) >= 0;
+          });
 };
-Chart.prototype.data.shown = function (targetIds) {
+Chart.prototype.data.shown = function(targetIds) {
     return this.internal.filterTargetsToShow(this.data(targetIds));
 };
 
@@ -18,7 +20,7 @@ Chart.prototype.data.shown = function (targetIds) {
  * @param flat
  * @return {Array} Data values
  */
-Chart.prototype.data.values = function (targetId, flat = true) {
+Chart.prototype.data.values = function(targetId, flat = true) {
     let values = null;
 
     if (targetId) {
@@ -38,18 +40,18 @@ Chart.prototype.data.values = function (targetId, flat = true) {
 
     return values;
 };
-Chart.prototype.data.names = function (names) {
+Chart.prototype.data.names = function(names) {
     this.internal.clearLegendItemTextBoxCache();
-    return this.internal.updateDataAttributes('names', names);
+    return this.internal.updateDataAttributes("names", names);
 };
-Chart.prototype.data.colors = function (colors) {
-    return this.internal.updateDataAttributes('colors', colors);
+Chart.prototype.data.colors = function(colors) {
+    return this.internal.updateDataAttributes("colors", colors);
 };
-Chart.prototype.data.axes = function (axes) {
-    return this.internal.updateDataAttributes('axes', axes);
+Chart.prototype.data.axes = function(axes) {
+    return this.internal.updateDataAttributes("axes", axes);
 };
 
-Chart.prototype.data.stackNormalized = function (normalized) {
+Chart.prototype.data.stackNormalized = function(normalized) {
     if (normalized === undefined) {
         return this.internal.isStackNormalized();
     }

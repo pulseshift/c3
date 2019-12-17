@@ -1,8 +1,8 @@
-import { Chart } from './core';
+import {Chart} from "./core";
 
 Chart.prototype.donut = function() {};
 
-Chart.prototype.donut.padAngle = function (padAngle) {
+Chart.prototype.donut.padAngle = function(padAngle) {
     if (padAngle === undefined) {
         return this.internal.config.donut_padAngle;
     }

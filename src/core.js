@@ -1,23 +1,10 @@
-import {
-    ChartInternal
-} from './chart-internal';
-import {
-    Chart
-} from './chart';
-import {
-    AxisInternal
-} from './axis-internal';
-import Axis from './axis';
-import CLASS from './class';
+import {ChartInternal} from "./chart-internal";
+import {Chart} from "./chart";
+import {AxisInternal} from "./axis-internal";
+import Axis from "./axis";
+import CLASS from "./class";
 
-import {
-    asHalfPixel,
-    getOption,
-    getPathBox,
-    isFunction,
-    isValue,
-    notEmpty
-} from './util';
+import {asHalfPixel, getOption, getPathBox, isFunction, isValue, notEmpty} from "./util";
 
 var c3 = {
     version: "0.7.11",
@@ -38,9 +25,7 @@ var c3 = {
     }
 };
 
-export {
-    c3
-};
+export {c3};
 
 ChartInternal.prototype.beforeInit = function() {
     // can do something
@@ -63,7 +48,7 @@ ChartInternal.prototype.init = function() {
     } else if (config.data_columns) {
         $$.initWithData($$.convertColumnsToData(config.data_columns));
     } else {
-        throw Error('url or json or rows or columns is required.');
+        throw Error("url or json or rows or columns is required.");
     }
 };
 
@@ -73,11 +58,11 @@ ChartInternal.prototype.initParams = function() {
         config = $$.config;
 
     // MEMO: clipId needs to be unique because it conflicts when multiple charts exist
-    $$.clipId = "c3-" + (+new Date()) + '-clip';
-    $$.clipIdForXAxis = $$.clipId + '-xaxis';
-    $$.clipIdForYAxis = $$.clipId + '-yaxis';
-    $$.clipIdForGrid = $$.clipId + '-grid';
-    $$.clipIdForSubchart = $$.clipId + '-subchart';
+    $$.clipId = "c3-" + new Date() + "-clip";
+    $$.clipIdForXAxis = $$.clipId + "-xaxis";
+    $$.clipIdForYAxis = $$.clipId + "-yaxis";
+    $$.clipIdForGrid = $$.clipId + "-grid";
+    $$.clipIdForSubchart = $$.clipId + "-subchart";
     $$.clipPath = $$.getClipPath($$.clipId);
     $$.clipPathForXAxis = $$.getClipPath($$.clipIdForXAxis);
     $$.clipPathForYAxis = $$.getClipPath($$.clipIdForYAxis);
@@ -125,15 +110,15 @@ ChartInternal.prototype.initParams = function() {
     $$.focusedTargetIds = [];
     $$.defocusedTargetIds = [];
 
-    $$.xOrient = config.axis_rotated ? (config.axis_x_inner ? "right" : "left") : (config.axis_x_inner ? "top" : "bottom");
-    $$.yOrient = config.axis_rotated ? (config.axis_y_inner ? "top" : "bottom") : (config.axis_y_inner ? "right" : "left");
-    $$.y2Orient = config.axis_rotated ? (config.axis_y2_inner ? "bottom" : "top") : (config.axis_y2_inner ? "left" : "right");
+    $$.xOrient = config.axis_rotated ? (config.axis_x_inner ? "right" : "left") : config.axis_x_inner ? "top" : "bottom";
+    $$.yOrient = config.axis_rotated ? (config.axis_y_inner ? "top" : "bottom") : config.axis_y_inner ? "right" : "left";
+    $$.y2Orient = config.axis_rotated ? (config.axis_y2_inner ? "bottom" : "top") : config.axis_y2_inner ? "left" : "right";
     $$.subXOrient = config.axis_rotated ? "left" : "bottom";
 
-    $$.isLegendRight = config.legend_position === 'right';
-    $$.isLegendInset = config.legend_position === 'inset';
-    $$.isLegendTop = config.legend_inset_anchor === 'top-left' || config.legend_inset_anchor === 'top-right';
-    $$.isLegendLeft = config.legend_inset_anchor === 'top-left' || config.legend_inset_anchor === 'bottom-left';
+    $$.isLegendRight = config.legend_position === "right";
+    $$.isLegendInset = config.legend_position === "inset";
+    $$.isLegendTop = config.legend_inset_anchor === "top-left" || config.legend_inset_anchor === "top-right";
+    $$.isLegendLeft = config.legend_inset_anchor === "top-left" || config.legend_inset_anchor === "bottom-left";
     $$.legendStep = 0;
     $$.legendItemWidth = 0;
     $$.legendItemHeight = 0;
@@ -177,19 +162,21 @@ ChartInternal.prototype.initWithData = function(data) {
     var $$ = this,
         d3 = $$.d3,
         config = $$.config;
-    var defs, main, binding = true;
+    var defs,
+        main,
+        binding = true;
 
     $$.axis = new Axis($$);
 
     if (!config.bindto) {
         $$.selectChart = d3.selectAll([]);
-    } else if (typeof config.bindto.node === 'function') {
+    } else if (typeof config.bindto.node === "function") {
         $$.selectChart = config.bindto;
     } else {
         $$.selectChart = d3.select(config.bindto);
     }
     if ($$.selectChart.empty()) {
-        $$.selectChart = d3.select(document.createElement('div')).style('opacity', 0);
+        $$.selectChart = d3.select(document.createElement("div")).style("opacity", 0);
         $$.observeInserted($$.selectChart);
         binding = false;
     }
@@ -211,7 +198,7 @@ ChartInternal.prototype.initWithData = function(data) {
         $$.addHiddenLegendIds(config.legend_hide === true ? $$.mapToIds($$.data.targets) : config.legend_hide);
     }
 
-    if($$.isStanfordGraphType()) {
+    if ($$.isStanfordGraphType()) {
         $$.initStanfordData();
     }
 
@@ -221,8 +208,8 @@ ChartInternal.prototype.initWithData = function(data) {
 
     // Set domains for each scale
     $$.x.domain(d3.extent($$.getXDomain($$.data.targets)));
-    $$.y.domain($$.getYDomain($$.data.targets, 'y'));
-    $$.y2.domain($$.getYDomain($$.data.targets, 'y2'));
+    $$.y.domain($$.getYDomain($$.data.targets, "y"));
+    $$.y2.domain($$.getYDomain($$.data.targets, "y2"));
     $$.subX.domain($$.x.domain());
     $$.subY.domain($$.y.domain());
     $$.subY2.domain($$.y2.domain());
@@ -233,17 +220,18 @@ ChartInternal.prototype.initWithData = function(data) {
     /*-- Basic Elements --*/
 
     // Define svgs
-    $$.svg = $$.selectChart.append("svg")
+    $$.svg = $$.selectChart
+        .append("svg")
         .style("overflow", "hidden")
-        .on('mouseenter', function() {
+        .on("mouseenter", function() {
             return config.onmouseover.call($$);
         })
-        .on('mouseleave', function() {
+        .on("mouseleave", function() {
             return config.onmouseout.call($$);
         });
 
     if ($$.config.svg_classname) {
-        $$.svg.attr('class', $$.config.svg_classname);
+        $$.svg.attr("class", $$.config.svg_classname);
     }
 
     // Define defs
@@ -256,7 +244,7 @@ ChartInternal.prototype.initWithData = function(data) {
     $$.updateSvgSize();
 
     // Define regions
-    main = $$.main = $$.svg.append("g").attr("transform", $$.getTranslate('main'));
+    main = $$.main = $$.svg.append("g").attr("transform", $$.getTranslate("main"));
 
     if ($$.initPie) {
         $$.initPie();
@@ -279,7 +267,7 @@ ChartInternal.prototype.initWithData = function(data) {
     if ($$.initZoom) {
         $$.initZoom();
     }
-    if($$.isStanfordGraphType()) {
+    if ($$.isStanfordGraphType()) {
         $$.drawColorScale();
     }
 
@@ -293,7 +281,7 @@ ChartInternal.prototype.initWithData = function(data) {
 
     // text when empty
     main.append("text")
-        .attr("class", CLASS.text + ' ' + CLASS.empty)
+        .attr("class", CLASS.text + " " + CLASS.empty)
         .attr("text-anchor", "middle") // horizontal centering of text at x position in all browsers.
         .attr("dominant-baseline", "middle"); // vertical centering of text at y position in all browsers, except IE.
 
@@ -304,9 +292,9 @@ ChartInternal.prototype.initWithData = function(data) {
     $$.initGrid();
 
     // Define g for chart area
-    main.append('g')
+    main.append("g")
         .attr("clip-path", $$.clipPath)
-        .attr('class', CLASS.chart);
+        .attr("class", CLASS.chart);
 
     // Grid lines
     if (config.grid_lines_front) {
@@ -357,18 +345,18 @@ ChartInternal.prototype.initWithData = function(data) {
 
 ChartInternal.prototype.smoothLines = function(el, type) {
     var $$ = this;
-    if (type === 'grid') {
+    if (type === "grid") {
         el.each(function() {
             var g = $$.d3.select(this),
-                x1 = g.attr('x1'),
-                x2 = g.attr('x2'),
-                y1 = g.attr('y1'),
-                y2 = g.attr('y2');
+                x1 = g.attr("x1"),
+                x2 = g.attr("x2"),
+                y1 = g.attr("y1"),
+                y2 = g.attr("y2");
             g.attr({
-                'x1': Math.ceil(x1),
-                'x2': Math.ceil(x2),
-                'y1': Math.ceil(y1),
-                'y2': Math.ceil(y2)
+                x1: Math.ceil(x1),
+                x2: Math.ceil(x2),
+                y1: Math.ceil(y1),
+                y2: Math.ceil(y2)
             });
         });
     }
@@ -381,37 +369,41 @@ ChartInternal.prototype.updateSizes = function() {
         legendWidth = $$.legend ? $$.getLegendWidth() : 0,
         legendHeightForBottom = $$.isLegendRight || $$.isLegendInset ? 0 : legendHeight,
         hasArc = $$.hasArcType(),
-        xAxisHeight = config.axis_rotated || hasArc ? 0 : $$.getHorizontalAxisHeight('x'),
-        subchartHeight = config.subchart_show && !hasArc ? (config.subchart_size_height + xAxisHeight) : 0;
+        xAxisHeight = config.axis_rotated || hasArc ? 0 : $$.getHorizontalAxisHeight("x"),
+        subchartHeight = config.subchart_show && !hasArc ? config.subchart_size_height + xAxisHeight : 0;
 
     $$.currentWidth = $$.getCurrentWidth();
     $$.currentHeight = $$.getCurrentHeight();
 
     // for main
-    $$.margin = config.axis_rotated ? {
-        top: $$.getHorizontalAxisHeight('y2') + $$.getCurrentPaddingTop(),
-        right: hasArc ? 0 : $$.getCurrentPaddingRight(),
-        bottom: $$.getHorizontalAxisHeight('y') + legendHeightForBottom + $$.getCurrentPaddingBottom(),
-        left: subchartHeight + (hasArc ? 0 : $$.getCurrentPaddingLeft())
-    } : {
-        top: 4 + $$.getCurrentPaddingTop(), // for top tick text
-        right: hasArc ? 0 : $$.getCurrentPaddingRight(),
-        bottom: xAxisHeight + subchartHeight + legendHeightForBottom + $$.getCurrentPaddingBottom(),
-        left: hasArc ? 0 : $$.getCurrentPaddingLeft()
-    };
+    $$.margin = config.axis_rotated
+        ? {
+              top: $$.getHorizontalAxisHeight("y2") + $$.getCurrentPaddingTop(),
+              right: hasArc ? 0 : $$.getCurrentPaddingRight(),
+              bottom: $$.getHorizontalAxisHeight("y") + legendHeightForBottom + $$.getCurrentPaddingBottom(),
+              left: subchartHeight + (hasArc ? 0 : $$.getCurrentPaddingLeft())
+          }
+        : {
+              top: 4 + $$.getCurrentPaddingTop(), // for top tick text
+              right: hasArc ? 0 : $$.getCurrentPaddingRight(),
+              bottom: xAxisHeight + subchartHeight + legendHeightForBottom + $$.getCurrentPaddingBottom(),
+              left: hasArc ? 0 : $$.getCurrentPaddingLeft()
+          };
 
     // for subchart
-    $$.margin2 = config.axis_rotated ? {
-        top: $$.margin.top,
-        right: NaN,
-        bottom: 20 + legendHeightForBottom,
-        left: $$.rotated_padding_left
-    } : {
-        top: $$.currentHeight - subchartHeight - legendHeightForBottom,
-        right: NaN,
-        bottom: xAxisHeight + legendHeightForBottom,
-        left: $$.margin.left
-    };
+    $$.margin2 = config.axis_rotated
+        ? {
+              top: $$.margin.top,
+              right: NaN,
+              bottom: 20 + legendHeightForBottom,
+              left: $$.rotated_padding_left
+          }
+        : {
+              top: $$.currentHeight - subchartHeight - legendHeightForBottom,
+              right: NaN,
+              bottom: xAxisHeight + legendHeightForBottom,
+              left: $$.margin.left
+          };
 
     // for legend
     $$.margin3 = {
@@ -445,7 +437,7 @@ ChartInternal.prototype.updateSizes = function() {
     // for arc
     $$.arcWidth = $$.width - ($$.isLegendRight ? legendWidth + 10 : 0);
     $$.arcHeight = $$.height - ($$.isLegendRight ? 0 : 10);
-    if ($$.hasType('gauge') && !config.gauge_fullCircle) {
+    if ($$.hasType("gauge") && !config.gauge_fullCircle) {
         $$.arcHeight += $$.height - $$.getGaugeLabelHeight();
     }
     if ($$.updateRadius) {
@@ -487,10 +479,13 @@ ChartInternal.prototype.updateTargets = function(targets) {
 };
 ChartInternal.prototype.showTargets = function() {
     var $$ = this;
-    $$.svg.selectAll('.' + CLASS.target).filter(function(d) {
+    $$.svg
+        .selectAll("." + CLASS.target)
+        .filter(function(d) {
             return $$.isTargetToShow(d.id);
         })
-        .transition().duration($$.config.transition_duration)
+        .transition()
+        .duration($$.config.transition_duration)
         .style("opacity", 1);
 };
 
@@ -502,17 +497,31 @@ ChartInternal.prototype.redraw = function(options, transitions) {
     var areaIndices = $$.getShapeIndices($$.isAreaType),
         barIndices = $$.getShapeIndices($$.isBarType),
         lineIndices = $$.getShapeIndices($$.isLineType);
-    var withY, withSubchart, withTransition, withTransitionForExit, withTransitionForAxis,
-        withTransform, withUpdateXDomain, withUpdateOrgXDomain, withTrimXDomain, withLegend,
-        withEventRect, withDimension, withUpdateXAxis;
+    var withY,
+        withSubchart,
+        withTransition,
+        withTransitionForExit,
+        withTransitionForAxis,
+        withTransform,
+        withUpdateXDomain,
+        withUpdateOrgXDomain,
+        withTrimXDomain,
+        withLegend,
+        withEventRect,
+        withDimension,
+        withUpdateXAxis;
     var hideAxis = $$.hasArcType();
     var drawArea, drawBar, drawLine, xForText, yForText;
     var duration, durationForExit, durationForAxis;
     var transitionsToWait, waitForDraw, flow, transition;
     var targetsToShow = $$.filterTargetsToShow($$.data.targets),
-        tickValues, i, intervalForCulling, xDomainForZoom;
+        tickValues,
+        i,
+        intervalForCulling,
+        xDomainForZoom;
     var xv = $$.xv.bind($$),
-        cx, cy;
+        cx,
+        cy;
 
     options = options || {};
     withY = getOption(options, "withY", true);
@@ -546,7 +555,7 @@ ChartInternal.prototype.redraw = function(options, transitions) {
 
     // MEMO: needed for grids calculation
     if ($$.isCategorized() && targetsToShow.length === 0) {
-        $$.x.domain([0, $$.axes.x.selectAll('.tick').size()]);
+        $$.x.domain([0, $$.axes.x.selectAll(".tick").size()]);
     }
 
     if (targetsToShow.length) {
@@ -563,8 +572,8 @@ ChartInternal.prototype.redraw = function(options, transitions) {
         xDomainForZoom = $$.x.orgDomain();
     }
 
-    $$.y.domain($$.getYDomain(targetsToShow, 'y', xDomainForZoom));
-    $$.y2.domain($$.getYDomain(targetsToShow, 'y2', xDomainForZoom));
+    $$.y.domain($$.getYDomain(targetsToShow, "y", xDomainForZoom));
+    $$.y2.domain($$.getYDomain(targetsToShow, "y2", xDomainForZoom));
 
     if (!config.axis_y_tick_values && config.axis_y_tick_count) {
         $$.yAxis.tickValues($$.axis.generateTickValues($$.y.domain(), config.axis_y_tick_count));
@@ -588,14 +597,14 @@ ChartInternal.prototype.redraw = function(options, transitions) {
                     break;
                 }
             }
-            $$.svg.selectAll('.' + CLASS.axisX + ' .tick text').each(function(e) {
+            $$.svg.selectAll("." + CLASS.axisX + " .tick text").each(function(e) {
                 var index = tickValues.indexOf(e);
                 if (index >= 0) {
-                    d3.select(this).style('display', index % intervalForCulling ? 'none' : 'block');
+                    d3.select(this).style("display", index % intervalForCulling ? "none" : "block");
                 }
             });
         } else {
-            $$.svg.selectAll('.' + CLASS.axisX + ' .tick text').style('display', 'block');
+            $$.svg.selectAll("." + CLASS.axisX + " .tick text").style("display", "block");
         }
     }
 
@@ -614,20 +623,20 @@ ChartInternal.prototype.redraw = function(options, transitions) {
 
     // Update sub domain
     if (withY) {
-        $$.subY.domain($$.getYDomain(targetsToShow, 'y'));
-        $$.subY2.domain($$.getYDomain(targetsToShow, 'y2'));
+        $$.subY.domain($$.getYDomain(targetsToShow, "y"));
+        $$.subY2.domain($$.getYDomain(targetsToShow, "y2"));
     }
 
     // xgrid focus
     $$.updateXgridFocus();
 
     // Data empty label positioning and text.
-    main.select("text." + CLASS.text + '.' + CLASS.empty)
+    main.select("text." + CLASS.text + "." + CLASS.empty)
         .attr("x", $$.width / 2)
         .attr("y", $$.height / 2)
         .text(config.data_empty_label_text)
         .transition()
-        .style('opacity', targetsToShow.length ? 0 : 1);
+        .style("opacity", targetsToShow.length ? 0 : 1);
 
     // event rect
     if (withEventRect) {
@@ -675,9 +684,9 @@ ChartInternal.prototype.redraw = function(options, transitions) {
     }
 
     // circles for select
-    main.selectAll('.' + CLASS.selectedCircles)
+    main.selectAll("." + CLASS.selectedCircles)
         .filter($$.isBarType.bind($$))
-        .selectAll('circle')
+        .selectAll("circle")
         .remove();
 
     if (options.flow) {
@@ -696,7 +705,8 @@ ChartInternal.prototype.redraw = function(options, transitions) {
         });
     }
 
-    if (duration && $$.isTabVisible()) { // Only use transition if tab visible. See #938.
+    if (duration && $$.isTabVisible()) {
+        // Only use transition if tab visible. See #938.
         // transition should be derived from one transition
         transition = d3.transition().duration(duration);
         transitionsToWait = [];
@@ -707,7 +717,7 @@ ChartInternal.prototype.redraw = function(options, transitions) {
             $$.redrawCircle(cx, cy, true, transition),
             $$.redrawText(xForText, yForText, options.flow, true, transition),
             $$.redrawRegion(true, transition),
-            $$.redrawGrid(true, transition),
+            $$.redrawGrid(true, transition)
         ].forEach(function(transitions) {
             transitions.forEach(function(transition) {
                 transitionsToWait.push(transition);
@@ -786,10 +796,10 @@ ChartInternal.prototype.redrawWithoutRescale = function() {
 };
 
 ChartInternal.prototype.isTimeSeries = function() {
-    return this.config.axis_x_type === 'timeseries';
+    return this.config.axis_x_type === "timeseries";
 };
 ChartInternal.prototype.isCategorized = function() {
-    return this.config.axis_x_type.indexOf('categor') >= 0;
+    return this.config.axis_x_type.indexOf("categor") >= 0;
 };
 ChartInternal.prototype.isCustomX = function() {
     var $$ = this,
@@ -798,37 +808,38 @@ ChartInternal.prototype.isCustomX = function() {
 };
 
 ChartInternal.prototype.isTimeSeriesY = function() {
-    return this.config.axis_y_type === 'timeseries';
+    return this.config.axis_y_type === "timeseries";
 };
 
 ChartInternal.prototype.getTranslate = function(target) {
     var $$ = this,
         config = $$.config,
-        x, y;
-    if (target === 'main') {
+        x,
+        y;
+    if (target === "main") {
         x = asHalfPixel($$.margin.left);
         y = asHalfPixel($$.margin.top);
-    } else if (target === 'context') {
+    } else if (target === "context") {
         x = asHalfPixel($$.margin2.left);
         y = asHalfPixel($$.margin2.top);
-    } else if (target === 'legend') {
+    } else if (target === "legend") {
         x = $$.margin3.left;
         y = $$.margin3.top;
-    } else if (target === 'x') {
+    } else if (target === "x") {
         x = 0;
         y = config.axis_rotated ? 0 : $$.height;
-    } else if (target === 'y') {
+    } else if (target === "y") {
         x = 0;
         y = config.axis_rotated ? $$.height : 0;
-    } else if (target === 'y2') {
+    } else if (target === "y2") {
         x = config.axis_rotated ? 0 : $$.width;
         y = config.axis_rotated ? 1 : 0;
-    } else if (target === 'subx') {
+    } else if (target === "subx") {
         x = 0;
         y = config.axis_rotated ? 0 : $$.height2;
-    } else if (target === 'arc') {
+    } else if (target === "arc") {
         x = $$.arcWidth / 2;
-        y = $$.arcHeight / 2 - ($$.hasType('gauge') ? 6 : 0); // to prevent wrong display of min and max label
+        y = $$.arcHeight / 2 - ($$.hasType("gauge") ? 6 : 0); // to prevent wrong display of min and max label
     }
     return "translate(" + x + "," + y + ")";
 };
@@ -854,14 +865,14 @@ ChartInternal.prototype.xvCustom = function(d, xyValue) {
         value = xyValue ? d[xyValue] : d.value;
     if ($$.isTimeSeries()) {
         value = $$.parseDate(d.value);
-    } else if ($$.isCategorized() && typeof d.value === 'string') {
+    } else if ($$.isCategorized() && typeof d.value === "string") {
         value = $$.config.axis_x_categories.indexOf(d.value);
     }
     return Math.ceil($$.x(value));
 };
 ChartInternal.prototype.yvCustom = function(d, xyValue) {
     var $$ = this,
-        yScale = d.axis && d.axis === 'y2' ? $$.y2 : $$.y,
+        yScale = d.axis && d.axis === "y2" ? $$.y2 : $$.y,
         value = xyValue ? d[xyValue] : d.value;
     return Math.ceil(yScale(value));
 };
@@ -870,14 +881,14 @@ ChartInternal.prototype.xv = function(d) {
         value = d.value;
     if ($$.isTimeSeries()) {
         value = $$.parseDate(d.value);
-    } else if ($$.isCategorized() && typeof d.value === 'string') {
+    } else if ($$.isCategorized() && typeof d.value === "string") {
         value = $$.config.axis_x_categories.indexOf(d.value);
     }
     return Math.ceil($$.x(value));
 };
 ChartInternal.prototype.yv = function(d) {
     var $$ = this,
-        yScale = d.axis && d.axis === 'y2' ? $$.y2 : $$.y;
+        yScale = d.axis && d.axis === "y2" ? $$.y2 : $$.y;
     return Math.ceil(yScale(d.value));
 };
 ChartInternal.prototype.subxx = function(d) {
@@ -886,11 +897,13 @@ ChartInternal.prototype.subxx = function(d) {
 
 ChartInternal.prototype.transformMain = function(withTransition, transitions) {
     var $$ = this,
-        xAxis, yAxis, y2Axis;
+        xAxis,
+        yAxis,
+        y2Axis;
     if (transitions && transitions.axisX) {
         xAxis = transitions.axisX;
     } else {
-        xAxis = $$.main.select('.' + CLASS.axisX);
+        xAxis = $$.main.select("." + CLASS.axisX);
         if (withTransition) {
             xAxis = xAxis.transition();
         }
@@ -898,7 +911,7 @@ ChartInternal.prototype.transformMain = function(withTransition, transitions) {
     if (transitions && transitions.axisY) {
         yAxis = transitions.axisY;
     } else {
-        yAxis = $$.main.select('.' + CLASS.axisY);
+        yAxis = $$.main.select("." + CLASS.axisY);
         if (withTransition) {
             yAxis = yAxis.transition();
         }
@@ -906,16 +919,16 @@ ChartInternal.prototype.transformMain = function(withTransition, transitions) {
     if (transitions && transitions.axisY2) {
         y2Axis = transitions.axisY2;
     } else {
-        y2Axis = $$.main.select('.' + CLASS.axisY2);
+        y2Axis = $$.main.select("." + CLASS.axisY2);
         if (withTransition) {
             y2Axis = y2Axis.transition();
         }
     }
-    (withTransition ? $$.main.transition() : $$.main).attr("transform", $$.getTranslate('main'));
-    xAxis.attr("transform", $$.getTranslate('x'));
-    yAxis.attr("transform", $$.getTranslate('y'));
-    y2Axis.attr("transform", $$.getTranslate('y2'));
-    $$.main.select('.' + CLASS.chartArcs).attr("transform", $$.getTranslate('arc'));
+    (withTransition ? $$.main.transition() : $$.main).attr("transform", $$.getTranslate("main"));
+    xAxis.attr("transform", $$.getTranslate("x"));
+    yAxis.attr("transform", $$.getTranslate("y"));
+    y2Axis.attr("transform", $$.getTranslate("y2"));
+    $$.main.select("." + CLASS.chartArcs).attr("transform", $$.getTranslate("arc"));
 };
 ChartInternal.prototype.transformAll = function(withTransition, transitions) {
     var $$ = this;
@@ -931,25 +944,33 @@ ChartInternal.prototype.transformAll = function(withTransition, transitions) {
 ChartInternal.prototype.updateSvgSize = function() {
     var $$ = this,
         brush = $$.svg.select(".c3-brush .overlay");
-    $$.svg.attr('width', $$.currentWidth).attr('height', $$.currentHeight);
-    $$.svg.selectAll(['#' + $$.clipId, '#' + $$.clipIdForGrid]).select('rect')
-        .attr('width', $$.width)
-        .attr('height', $$.height);
-    $$.svg.select('#' + $$.clipIdForXAxis).select('rect')
-        .attr('x', $$.getXAxisClipX.bind($$))
-        .attr('y', $$.getXAxisClipY.bind($$))
-        .attr('width', $$.getXAxisClipWidth.bind($$))
-        .attr('height', $$.getXAxisClipHeight.bind($$));
-    $$.svg.select('#' + $$.clipIdForYAxis).select('rect')
-        .attr('x', $$.getYAxisClipX.bind($$))
-        .attr('y', $$.getYAxisClipY.bind($$))
-        .attr('width', $$.getYAxisClipWidth.bind($$))
-        .attr('height', $$.getYAxisClipHeight.bind($$));
-    $$.svg.select('#' + $$.clipIdForSubchart).select('rect')
-        .attr('width', $$.width)
-        .attr('height', brush.size() ? brush.attr('height') : 0);
+    $$.svg.attr("width", $$.currentWidth).attr("height", $$.currentHeight);
+    $$.svg
+        .selectAll(["#" + $$.clipId, "#" + $$.clipIdForGrid])
+        .select("rect")
+        .attr("width", $$.width)
+        .attr("height", $$.height);
+    $$.svg
+        .select("#" + $$.clipIdForXAxis)
+        .select("rect")
+        .attr("x", $$.getXAxisClipX.bind($$))
+        .attr("y", $$.getXAxisClipY.bind($$))
+        .attr("width", $$.getXAxisClipWidth.bind($$))
+        .attr("height", $$.getXAxisClipHeight.bind($$));
+    $$.svg
+        .select("#" + $$.clipIdForYAxis)
+        .select("rect")
+        .attr("x", $$.getYAxisClipX.bind($$))
+        .attr("y", $$.getYAxisClipY.bind($$))
+        .attr("width", $$.getYAxisClipWidth.bind($$))
+        .attr("height", $$.getYAxisClipHeight.bind($$));
+    $$.svg
+        .select("#" + $$.clipIdForSubchart)
+        .select("rect")
+        .attr("width", $$.width)
+        .attr("height", brush.size() ? brush.attr("height") : 0);
     // MEMO: parent div's height will be bigger than svg when <!DOCTYPE html>
-    $$.selectChart.style('max-height', $$.currentHeight + "px");
+    $$.selectChart.style("max-height", $$.currentHeight + "px");
 };
 
 ChartInternal.prototype.updateDimension = function(withoutAxis) {
@@ -972,13 +993,13 @@ ChartInternal.prototype.updateDimension = function(withoutAxis) {
 ChartInternal.prototype.observeInserted = function(selection) {
     var $$ = this,
         observer;
-    if (typeof MutationObserver === 'undefined') {
+    if (typeof MutationObserver === "undefined") {
         window.console.error("MutationObserver not defined.");
         return;
     }
     observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList' && mutation.previousSibling) {
+            if (mutation.type === "childList" && mutation.previousSibling) {
                 observer.disconnect();
                 // need to wait for completion of load because size calculation requires the actual sizes determined after that completion
                 $$.intervalForObserveInserted = window.setInterval(function() {
@@ -998,7 +1019,7 @@ ChartInternal.prototype.observeInserted = function(selection) {
                             withTransitionForTransform: false,
                             withLegend: true
                         });
-                        selection.transition().style('opacity', 1);
+                        selection.transition().style("opacity", 1);
                     }
                 }, 10);
             }
@@ -1035,7 +1056,7 @@ ChartInternal.prototype.bindResize = function() {
                     withUpdateOrgXDomain: false,
                     withTransition: false,
                     withTransitionForTransform: false,
-                    withLegend: true,
+                    withLegend: true
                 });
                 if ($$.brush) {
                     $$.brush.update();
@@ -1057,9 +1078,9 @@ ChartInternal.prototype.bindResize = function() {
     };
 
     if (window.attachEvent) {
-        window.attachEvent('onresize', $$.resizeIfElementDisplayed);
+        window.attachEvent("onresize", $$.resizeIfElementDisplayed);
     } else if (window.addEventListener) {
-        window.addEventListener('resize', $$.resizeIfElementDisplayed, false);
+        window.addEventListener("resize", $$.resizeIfElementDisplayed, false);
     } else {
         // fallback to this, if this is a very old browser
         var wrapper = window.onresize;
@@ -1093,16 +1114,18 @@ ChartInternal.prototype.bindWindowFocus = function() {
         return;
     }
 
-    this.windowFocusHandler = () => { this.redraw(); };
+    this.windowFocusHandler = () => {
+        this.redraw();
+    };
 
-    window.addEventListener('focus', this.windowFocusHandler);
+    window.addEventListener("focus", this.windowFocusHandler);
 };
 
 /**
  * Unbinds from the window focus event.
  */
-ChartInternal.prototype.unbindWindowFocus = function () {
-    window.removeEventListener('focus', this.windowFocusHandler);
+ChartInternal.prototype.unbindWindowFocus = function() {
+    window.removeEventListener("focus", this.windowFocusHandler);
     delete this.windowFocusHandler;
 };
 
@@ -1146,9 +1169,9 @@ ChartInternal.prototype.generateWait = function() {
         f = function(callback) {
             var timer = setInterval(function() {
                 if (!$$.isTabVisible()) {
-                  return;
+                    return;
                 }
-  
+
                 var done = 0;
                 transitionsToWait.forEach(function(t) {
                     if (t.empty()) {
@@ -1180,11 +1203,11 @@ ChartInternal.prototype.parseDate = function(date) {
         parsedDate;
     if (date instanceof Date) {
         parsedDate = date;
-    } else if (typeof date === 'string') {
+    } else if (typeof date === "string") {
         parsedDate = $$.dataTimeParse(date);
-    } else if (typeof date === 'object') {
+    } else if (typeof date === "object") {
         parsedDate = new Date(+date);
-    } else if (typeof date === 'number' && !isNaN(date)) {
+    } else if (typeof date === "number" && !isNaN(date)) {
         parsedDate = new Date(+date);
     }
     if (!parsedDate || isNaN(+parsedDate)) {
@@ -1200,9 +1223,5 @@ ChartInternal.prototype.isTabVisible = function() {
 ChartInternal.prototype.getPathBox = getPathBox;
 ChartInternal.prototype.CLASS = CLASS;
 
-export {
-    Chart
-};
-export {
-    ChartInternal
-};
+export {Chart};
+export {ChartInternal};
