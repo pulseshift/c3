@@ -58,7 +58,7 @@ ChartInternal.prototype.initParams = function() {
         config = $$.config;
 
     // MEMO: clipId needs to be unique because it conflicts when multiple charts exist
-    $$.clipId = "c3-" + new Date() + "-clip";
+    $$.clipId = "c3-" + (new Date()).getTime() + "-clip";
     $$.clipIdForXAxis = $$.clipId + "-xaxis";
     $$.clipIdForYAxis = $$.clipId + "-yaxis";
     $$.clipIdForGrid = $$.clipId + "-grid";

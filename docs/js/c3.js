@@ -1,4 +1,4 @@
-/* @license C3.js v0.7.11 | (c) C3 Team and other contributors | http://c3js.org/ */
+/* @license C3.js v0.7.12 | (c) C3 Team and other contributors | http://c3js.org/ */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1287,7 +1287,7 @@
         d3 = $$.d3,
         config = $$.config; // MEMO: clipId needs to be unique because it conflicts when multiple charts exist
 
-    $$.clipId = "c3-" + new Date() + "-clip";
+    $$.clipId = "c3-" + new Date().getTime() + "-clip";
     $$.clipIdForXAxis = $$.clipId + "-xaxis";
     $$.clipIdForYAxis = $$.clipId + "-yaxis";
     $$.clipIdForGrid = $$.clipId + "-grid";
@@ -6700,14 +6700,14 @@
 
   ChartInternal.prototype.convertUrlToData = function (url, mimeType, headers, keys, done) {
     var $$ = this,
-        type = mimeType ? mimeType : "csv",
+        type = mimeType ? mimeType : 'csv',
         f,
         converter;
 
-    if (type === "json") {
+    if (type === 'json') {
       f = $$.d3.json;
       converter = $$.convertJsonToData;
-    } else if (type === "tsv") {
+    } else if (type === 'tsv') {
       f = $$.d3.tsv;
       converter = $$.convertXsvToData;
     } else {
@@ -6785,11 +6785,11 @@
   };
 
   ChartInternal.prototype.findValueInJson = function (object, path) {
-    path = path.replace(/\[(\w+)\]/g, ".$1"); // convert indexes to properties (replace [] with .)
+    path = path.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties (replace [] with .)
 
-    path = path.replace(/^\./, ""); // strip a leading dot
+    path = path.replace(/^\./, ''); // strip a leading dot
 
-    var pathArray = path.split(".");
+    var pathArray = path.split('.');
 
     for (var i = 0; i < pathArray.length; ++i) {
       var k = pathArray[i];
@@ -6902,7 +6902,7 @@
       ids = keys.filter($$.isNotXAndNotEpochs, $$);
 
       if (xs.length !== 1 || epochs.length !== 1 || ids.length !== 1) {
-        throw new Error("You must define the 'x' key name and the 'epochs' for Stanford Diagrams");
+        throw new Error('You must define the \'x\' key name and the \'epochs\' for Stanford Diagrams');
       }
     } // save x for update data by load when custom x and c3.x API
 
@@ -6950,8 +6950,8 @@
               // ===== START OPAL EXTENSION =====
           // introducing ribbonYs, which is a pair of y values at the same x value: a high and a low
           fnIsValidRibbonValue = function fnIsValidRibbonValue(val) {
-            var isValidHigh = _typeof(val) === "object" && val.hasOwnProperty("high") && !isNaN(val.high);
-            var isValidLow = _typeof(val) === "object" && val.hasOwnProperty("low") && !isNaN(val.low);
+            var isValidHigh = _typeof(val) === 'object' && val.hasOwnProperty('high') && !isNaN(val.high);
+            var isValidLow = _typeof(val) === 'object' && val.hasOwnProperty('low') && !isNaN(val.low);
             return isValidHigh && isValidLow;
           },
               //add value if valid and no ribbon type
