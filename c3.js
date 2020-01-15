@@ -8543,15 +8543,17 @@
       return CLASS.xgridLine + (d["class"] ? " " + d["class"] : "");
     });
     xgridLineEnter.append("line").attr("x1", config.axis_rotated ? 0 : xv).attr("x2", config.axis_rotated ? $$.width : xv).attr("y1", config.axis_rotated ? xv : 0).attr("y2", config.axis_rotated ? xv : $$.height).style("opacity", 0);
-    xgridLineEnter.append("text").attr("text-anchor", $$.gridTextAnchor).attr("transform", config.axis_rotated ? "" : "rotate(-90)").attr("x", config.axis_rotated ? yGridTextX : xGridTextX).attr("y", xv).attr("dx", $$.gridTextDx).attr("dy", -5).style("opacity", 0); // === START PULSESHIFT CUSTOM EXTENSION ===
+    xgridLineEnter.append("text").attr("text-anchor", $$.gridTextAnchor).attr("transform", config.axis_rotated ? "" : "rotate(-90)").attr("x", config.axis_rotated ? yGridTextX : xGridTextX).attr("y", xv).attr("dx", $$.gridTextDx).attr("dy", -5).style("opacity", 0);
 
-    xgridLine.append("text").attr("text-anchor", "middle").attr("class", CLASS.gridLineCircleText).attr("dx", 1).attr("dy", 14).attr("y", 15).text("\uE0AA").style("opacity", 0);
-    xgridLine.append("circle").attr("class", CLASS.gridLineCircle).attr("r", 15).attr("cy", 21).attr("fill", "transparent").attr("stroke-width", 2).style("opacity", 0);
-    xgridLine.append("circle").attr("class", CLASS.gridLineCircleHover).attr("r", 15).attr("cy", 21).attr("fill", "transparent").attr("stroke-width", 1).attr("stroke-linecap", "round").attr("stroke-dasharray", "1 3").on("mouseover", function () {
+    // === START PULSESHIFT CUSTOM EXTENSION ===
+    xgridLineEnter.append("text").attr("text-anchor", "middle").attr("class", CLASS.gridLineCircleText).attr("dx", 1).attr("dy", 14).attr("y", 15).text("\uE0AA").style("opacity", 0);
+    xgridLineEnter.append("circle").attr("class", CLASS.gridLineCircle).attr("r", 15).attr("cy", 21).attr("fill", "transparent").attr("stroke-width", 2).style("opacity", 0);
+    xgridLineEnter.append("circle").attr("class", CLASS.gridLineCircleHover).attr("r", 15).attr("cy", 21).attr("fill", "transparent").attr("stroke-width", 1).attr("stroke-linecap", "round").attr("stroke-dasharray", "1 3").on("mouseover", function () {
       this.setAttribute("r", "20");
     }).on("mouseout", function () {
       this.setAttribute("r", "15");
-    }).style("opacity", 0); // === END PULSESHIFT CUSTOM EXTENSION ===
+    }).style("opacity", 0);
+    // === END PULSESHIFT CUSTOM EXTENSION ===
     // udpate
 
     $$.xgridLines = xgridLineEnter.merge(xgridLine); // done in d3.transition() of the end of this function
