@@ -1,14 +1,5 @@
 {
-  "printWidth": 210,
-  "semi": true,
-  "singleQuote": false,
-  "bracketSpacing": false,
-  "overrides": [
-    {
-      "files": "*.js",
-      "options": {
-        "parser": "babel-flow"
-      }
-    }
-  ]
+  "tabWidth": 2,
+  "semi": false,
+  "singleQuote": true
 }
