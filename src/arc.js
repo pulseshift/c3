@@ -499,7 +499,10 @@ ChartInternal.prototype.redrawArc = function(
       mainArcLabelLine
         .style('fill', function(d) {
           return $$.levelColor
-            ? $$.levelColor(d.data.values[0].value)
+            ? $$.levelColor(d.data.values.reduce(function(total, item) {
+                  return total + item.value
+                }, 0)
+              )
             : $$.color(d.data)
         })
         .style('display', config.gauge_labelLine_show ? '' : 'none')
@@ -662,7 +665,10 @@ ChartInternal.prototype.redrawArc = function(
     .attr('transform', withTransform ? 'scale(1)' : '')
     .style('fill', function(d) {
       return $$.levelColor
-        ? $$.levelColor(d.data.values[0].value)
+        ? $$.levelColor(d.data.values.reduce(function(total, item) {
+              return total + item.value
+            }, 0)
+          )
         : $$.color(d.data.id)
     }) // Where gauge reading color would receive customization.
     .call($$.endall, function() {

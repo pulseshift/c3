@@ -316,7 +316,7 @@ ChartInternal.prototype.redrawGrid = function(withTransition, transition) {
       .attr('x2', config.axis_rotated ? $$.width : xv)
 
       // === START PULSESHIFT CUSTOM EXTENSION ===
-      // remove >> .attr("y1", config.axis_rotated ? xv : 0)
+      // remove >> .attr('y1', config.axis_rotated ? xv : 0)
       .attr(
         'y1',
         config.axis_rotated
@@ -341,7 +341,6 @@ ChartInternal.prototype.redrawGrid = function(withTransition, transition) {
       .attr('x', xv)
       .style('opacity', 1),
     // === END PULSESHIFT CUSTOM EXTENSION ===
-
     (withTransition ? texts.transition(transition) : texts)
       .attr(
         'x',

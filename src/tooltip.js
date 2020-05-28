@@ -130,101 +130,44 @@ ChartInternal.prototype.getTooltipContent = function(
       function(name) {
         return name
       },
-    valueFormat = config.tooltip_format_value || defaultValueFormat,
     text,
     i,
     title,
     value,
     name,
-    bgcolor,
-    orderAsc = $$.isOrderAsc()
+    bgcolor
 
-  //create an array that contains any CI's high AND low values as seperate entries
-  var completeArray = [] //.concat(d);
-  var offset = 0
+  var valueFormat = config.tooltip_format_value
+  if (!valueFormat) {
+    valueFormat = $$.isTargetNormalized(d.id)
+      ? (v, ratio) => `${(ratio * 100).toFixed(2)}%`
+      : defaultValueFormat
+  }
+
+  var tooltipSortFunction = this.getTooltipSortFunction()
+  if (tooltipSortFunction) {
+    d.sort(tooltipSortFunction)
+  }
 
   for (i = 0; i < d.length; i++) {
-    if (!d[i]) {
-      offset++
-      continue
-    }
-
-    //append the data for one graph
-    completeArray.push({
-      id: d[i].id,
-      value: d[i].value,
-      name: d[i].name,
-      index: d[i].index,
-      x: d[i].x
-    })
-
-    //append high and low data for ribbon type
-    if ($$.isRibbonType(d[i])) {
-      var sName = d[i].name
-      //create a new element and append it to the array for the low value
-      completeArray.push({
-        id: d[i].id,
-        value: d[i].ribbonYs.low,
-        name: sName.concat(' low'),
-        index: d[i].index,
-        ribbonYs: d[i].ribbonYs,
-        x: d[i].x
-      })
-      //change original CI element to represent the high value
-      completeArray[i - offset].value = d[i].ribbonYs.high
-      completeArray[i - offset].name = sName.concat(' high')
-    }
-  }
-
-  if (config.data_groups.length === 0) {
-    completeArray.sort(function(a, b) {
-      var v1 = a ? a.value : null,
-        v2 = b ? b.value : null
-      return orderAsc ? v1 - v2 : v2 - v1
-    })
-  } else {
-    var ids = $$.orderTargets($$.data.targets).map(function(i) {
-      return i.id
-    })
-    completeArray.sort(function(a, b) {
-      var v1 = a ? a.value : null,
-        v2 = b ? b.value : null
-      if (v1 > 0 && v2 > 0) {
-        v1 = a ? ids.indexOf(a.id) : null
-        v2 = b ? ids.indexOf(b.id) : null
-      }
-      return orderAsc ? v1 - v2 : v2 - v1
-    })
-  }
-
-  for (i = 0; i < completeArray.length; i++) {
-    if (
-      !(
-        completeArray[i] &&
-        (completeArray[i].value || completeArray[i].value === 0)
-      )
-    ) {
+    if (!(d[i] && (d[i].value || d[i].value === 0))) {
       continue
     }
 
     if ($$.isStanfordGraphType()) {
       // Custom tooltip for stanford plots
       if (!text) {
-        title = $$.getStanfordTooltipTitle(completeArray[i])
+        title = $$.getStanfordTooltipTitle(d[i])
         text = "<table class='" + $$.CLASS.tooltip + "'>" + title
       }
 
-      bgcolor = $$.getStanfordPointColor(completeArray[i])
+      bgcolor = $$.getStanfordPointColor(d[i])
       name = sanitise(config.data_epochs) // Epochs key name
-      value = completeArray[i].epochs
+      value = d[i].epochs
     } else {
       // Regular tooltip
       if (!text) {
-        title = sanitise(
-          titleFormat
-            ? titleFormat(completeArray[i].x, completeArray[i].index)
-            : completeArray[i].x
-        )
+        title = sanitise(titleFormat ? titleFormat(d[i].x, d[i].index) : d[i].x)
         text =
           "<table class='" +
           $$.CLASS.tooltip +
@@ -235,45 +178,25 @@ ChartInternal.prototype.getTooltipContent = function(
       }
 
       value = sanitise(
-        valueFormat(
-          completeArray[i].value,
-          completeArray[i].ratio,
-          completeArray[i].id,
-          completeArray[i].index,
-          completeArray
-        )
+        valueFormat(d[i].value, d[i].ratio, d[i].id, d[i].index, d)
       )
       if (value !== undefined) {
         // Skip elements when their name is set to null
-        if (completeArray[i].name === null) {
+        if (d[i].name === null) {
           continue
         }
 
-        name = sanitise(
-          nameFormat(
-            completeArray[i].name,
-            completeArray[i].ratio,
-            completeArray[i].id,
-            completeArray[i].index
-          )
-        )
-        bgcolor = $$.levelColor
-          ? $$.levelColor(completeArray[i].value)
-          : color(completeArray[i].id)
+        name = sanitise(nameFormat(d[i].name, d[i].ratio, d[i].id, d[i].index))
+        bgcolor = $$.levelColor ? $$.levelColor(d[i].value) : color(d[i].id)
       }
     }
 
     if (value !== undefined) {
-      // Skip elements when their name is set to null
-      if (completeArray[i].name === null) {
-        continue
-      }
-
       text +=
         "<tr class='" +
         $$.CLASS.tooltipName +
         '-' +
-        $$.getTargetSelectorSuffix(completeArray[i].id) +
+        $$.getTargetSelectorSuffix(d[i].id) +
         "'>"
       text +=
         "<td class='name'><span style='background-color:" +
@@ -341,14 +264,14 @@ ChartInternal.prototype.showTooltip = function(selectedData, element) {
     config = $$.config
   var tWidth, tHeight, position
   var forArc = $$.hasArcType(),
-    ribbonIsValue = null,
-    dataToShow = selectedData.filter(function(d) {
-      if (d) {
-        ribbonIsValue = !d.ribbonYs
-          ? null
-          : isValue(d.ribbonYs.high) && isValue(d.ribbonYs.low)
-      }
-      return d && (isValue(d.value) || ribbonIsValue)
+      ribbonIsValue = null,
+      dataToShow = selectedData.filter(function(d) {
+        if (d) {
+            ribbonIsValue = !d.ribbonYs
+                ? null
+                : isValue(d.ribbonYs.high) && isValue(d.ribbonYs.low)
+        }
+        return d && (isValue(d.value) || ribbonIsValue)
     }),
     positionFunction =
       config.tooltip_position || ChartInternal.prototype.tooltipPosition

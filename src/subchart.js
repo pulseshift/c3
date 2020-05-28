@@ -84,11 +84,10 @@ ChartInternal.prototype.initSubchart = function() {
     config = $$.config,
     context = ($$.context = $$.svg
       .append('g')
-      .attr('transform', $$.getTranslate('context'))),
-    visibility = config.subchart_show ? 'visible' : 'hidden'
+      .attr('transform', $$.getTranslate('context')))
 
   // set style
-  context.style('visibility', visibility)
+  context.style('visibility', 'visible')
 
   // Define g for chart area
   context
@@ -142,7 +141,6 @@ ChartInternal.prototype.updateTargetsForSubchart = function(targets) {
     classLines = $$.classLines.bind($$),
     classAreas = $$.classAreas.bind($$)
 
-  if (config.subchart_show) {
     //-- Bar --//
     contextBar = context
       .select('.' + CLASS.chartBars)
@@ -178,7 +176,6 @@ ChartInternal.prototype.updateTargetsForSubchart = function(targets) {
         config.axis_rotated ? 'width' : 'height',
         config.axis_rotated ? $$.width2 : $$.height2
       )
-  }
 }
 ChartInternal.prototype.updateBarForSubchart = function(durationForExit) {
   var $$ = this
@@ -292,18 +289,14 @@ ChartInternal.prototype.redrawSubchart = function(
   areaIndices,
   barIndices,
   lineIndices
-) {
-  var $$ = this,
+
+) {  var $$ = this,
     d3 = $$.d3,
-    config = $$.config,
+
     drawAreaOnSub,
     drawBarOnSub,
     drawLineOnSub
 
-  $$.context.style('visibility', config.subchart_show ? 'visible' : 'hidden')
-
-  // subchart
-  if (config.subchart_show) {
     // reflect main chart to extent on subchart if zoomed
     if (d3.event && d3.event.type === 'zoom') {
       $$.brush.selectionAsValue($$.x.orgDomain())
@@ -327,7 +320,6 @@ ChartInternal.prototype.redrawSubchart = function(
       $$.redrawLineForSubchart(drawLineOnSub, duration, duration)
       $$.redrawAreaForSubchart(drawAreaOnSub, duration, duration)
     }
-  }
 }
 ChartInternal.prototype.redrawForBrush = function() {
   var $$ = this,
@@ -379,4 +371,12 @@ ChartInternal.prototype.getDefaultSelection = function() {
     selection = [$$.parseDate(selection[0]), $$.parseDate(selection[1])]
   }
   return selection
+  }
+
+ChartInternal.prototype.removeSubchart = function() {
+  const $$ = this
+
+  $$.brush = null
+  $$.context.remove()
+  $$.context = null
 }

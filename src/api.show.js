@@ -1,4 +1,5 @@
 import { Chart } from './core'
+import { isIE } from './util'
 
 Chart.prototype.show = function(targetIds, options) {
   var $$ = this.internal,
@@ -12,7 +13,7 @@ Chart.prototype.show = function(targetIds, options) {
 
   targets
     .transition()
-    .style('display', 'initial', 'important')
+    .style('display', isIE() ? 'block' : 'initial', 'important')
     .style('opacity', 1, 'important')
     .call($$.endall, function() {
       targets.style('opacity', null).style('opacity', 1)
